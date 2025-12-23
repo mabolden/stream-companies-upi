@@ -1,220 +1,64 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #024a76;
-    color: #dbe5e9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100vh;
-    margin: 0;
-    padding-top: 80px;
-    box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Stream Companies Content Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="banner">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
+        </div>
+        <h1>Stream Companies UPI (Content Generator)</h1>
+    </div>
 
-.banner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    background-color: #fafbfc;
-    padding: 15px 40px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 60px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    box-sizing: border-box;
-}
+    <div class="content">
+        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
+            <img src="{{ url_for('static', filename='UPI_Logo.png') }}" 
+                 alt="Unpaid Intern Logo" 
+                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+        </div>
 
-.banner img {
-    height: 50px;
-    max-width: 150px;
-    margin-left: 10px;
-}
+        <br>
+        <h2>Hi! I'm your personal UPI</h2>
 
-.banner h1 {
-    color: #f3793e;
-    margin: 0;
-    font-size: 22px;
-    flex-grow: 1;
-    text-align: center;
-}
+        <form method="POST">
+            <div class="search-container">
+                <textarea name="html_content" placeholder="Paste your raw HTML here"></textarea>
+                <button class="button" type="submit"><strong>↑</strong></button>
+            </div>
 
-.content {
-    margin-top: 20px;
-    text-align: center;
-    width: 100%;
-}
+            <!-- First row: Geolocation + MSLP toggles -->
+            <div class="toggle-row">
+                <label class="switch-label">
+                    <input type="checkbox" name="geo_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">New Geolocation Template</div>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" name="mslp_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Use MSLP Template</div>
+                </label>
+            </div>
 
-.search-container {
-    display: flex;
-    align-items: center;
-    width: 95%;
-    max-width: 800px;
-    background-color: #4b5c6d;
-    border-radius: 50px;
-    padding: 10px 20px;
-    border: 1px solid #97adb9;
-    margin: 0 auto;
-}
+            <!-- Second row: Outro w/Map centered -->
+            <div class="toggle-single">
+                <label class="switch-label">
+                    <input type="checkbox" name="map_outro_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Outro w/Map</div>
+                </label>
+            </div>
+        </form>
 
-textarea {
-    flex-grow: 1;
-    background-color: transparent;
-    color: white;
-    border: none;
-    outline: none;
-    font-size: 24px;
-    padding: 12px;
-    resize: none;
-    min-height: 40px;
-    max-height: 200px;
-    border-radius: 10px;
-}
-
-.button {
-    background-color: #ca7149;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    margin-left: 10px;
-    border-radius: 50px;
-    font-size: 24px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.button:hover {
-    background-color: #a35d3a;
-}
-
-.download-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.download-button {
-    background-color: #2ec2d5;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 50px;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: 0.3s;
-    display: inline-block;
-}
-
-.download-button:hover {
-    background-color: #1aa6b8;
-}
-
-/* --- Toggle Switch Layout --- */
-.toggle-row {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-top: 30px;
-    flex-wrap: wrap;
-}
-
-.switch-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.switch-label input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: relative;
-    width: 60px;
-    height: 34px;
-    background-color: #97adb9;
-    border-radius: 34px;
-    transition: background-color 0.3s;
-    margin-bottom: 4px;
-}
-
-.slider::before {
-    content: "";
-    position: absolute;
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-}
-
-input:checked + .slider {
-    background-color: #ca7149;
-}
-
-input:checked + .slider::before {
-    transform: translateX(26px);
-}
-
-.switch-text {
-    color: #dbe5e9;
-    font-size: 14px;
-    text-align: center;
-}
-
-/* --- Image Form Styles --- */
-.image-form {
-    margin-top: 40px;
-    width: 90%;
-    max-width: 800px;
-    background-color: #4b5c6d;
-    border-radius: 10px;
-    padding: 20px;
-    box-sizing: border-box;
-    color: white;
-}
-
-.image-form h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #f3793e;
-    text-align: center;
-}
-
-.image-input-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-
-.image-input-group label {
-    font-size: 16px;
-    margin-bottom: 8px;
-    color: #dbe5e9;
-}
-
-.image-input-group input {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: 1px solid #97adb9;
-    background-color: #fafbfc;
-    color: #024a76;
-}
-.toggle-single {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
+        {% if download_url %}
+            <div class="download-container">
+                <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

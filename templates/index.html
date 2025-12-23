@@ -4,9 +4,59 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Stream Companies Content Generator</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .editor-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin: 30px auto;
+        }
+
+        .map-check-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 18px;
+        }
+
+        .map-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .map-check input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .map-check__dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            box-sizing: border-box;
+            transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        .map-check input[type="checkbox"]:checked + .map-check__dot {
+            background: #ca7149;
+            border-color: #ca7149;
+            box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
+        }
+    </style>
+
+    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
+
 <body>
+
     <div class="banner">
         <div class="logo-container">
             <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
@@ -15,50 +65,104 @@
     </div>
 
     <div class="content">
-        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
-            <img src="{{ url_for('static', filename='UPI_Logo.png') }}" 
-                 alt="Unpaid Intern Logo" 
-                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+
+        <div style="display:flex;justify-content:center;margin-top:10px;">
+            <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
+                 alt="Unpaid Intern Logo"
+                 style="width:100px;height:100px;border-radius:50%;object-fit:cover;">
         </div>
 
-        <br>
         <h2>Hi! I'm your personal UPI</h2>
 
         <form method="POST">
-            <div class="search-container">
-                <textarea name="html_content" placeholder="Paste your raw HTML here"></textarea>
+
+            <div class="editor-container">
+                <textarea id="html_content" name="html_content"></textarea>
+            </div>
+
+            <div style="text-align:center;">
                 <button class="button" type="submit"><strong>↑</strong></button>
             </div>
 
-            <!-- First row: Geolocation + MSLP toggles -->
             <div class="toggle-row">
                 <label class="switch-label">
-                    <input type="checkbox" name="geo_toggle">
+                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
                     <span class="slider"></span>
-                    <div class="switch-text">New Geolocation Template</div>
+                    <div class="switch-text">Geolocation Template</div>
                 </label>
+
                 <label class="switch-label">
-                    <input type="checkbox" name="mslp_toggle">
+                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
                     <span class="slider"></span>
-                    <div class="switch-text">Use MSLP Template</div>
+                    <div class="switch-text">SRP / MSLP Template</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Single Image Template</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Single Image (Banner)</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Hubpage Template</div>
                 </label>
             </div>
 
-            <!-- Second row: Outro w/Map centered -->
-            <div class="toggle-single">
-                <label class="switch-label">
-                    <input type="checkbox" name="map_outro_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Outro w/Map</div>
+            <div class="map-check-row">
+                <label class="map-check">
+                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
+                    <span class="map-check__dot"></span>
+                    <div class="switch-text">Outro w/ Map</div>
                 </label>
             </div>
+
         </form>
 
         {% if download_url %}
-            <div class="download-container">
-                <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
-            </div>
+        <div class="download-container">
+            <a class="download-button" href="{{ download_url }}" download>
+                Download Output File
+            </a>
+        </div>
         {% endif %}
+
     </div>
+
+    <script>
+        CKEDITOR.replace('html_content', {
+            height: 200,
+            width: '100%',
+            allowedContent: true,
+            autoParagraph: false,
+            removePlugins: 'elementspath,resize'
+        });
+
+        const toggles = [
+            geo_toggle,
+            mslp_toggle,
+            single_image_toggle,
+            single_banner_toggle,
+            hubpage_toggle
+        ];
+
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', () => {
+                if (toggle.checked) {
+                    toggles.forEach(t => {
+                        if (t !== toggle) t.checked = false;
+                    });
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
