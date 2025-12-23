@@ -7,12 +7,20 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
+
     <style>
         .editor-container {
             display: flex;
             justify-content: center;
-            width: 100%;
+            align-items: center;
             margin: 30px auto;
+            width: 100%;
+        }
+
+        .cke_editor_html_content {
+            margin: 0 auto;
         }
 
         .map-check-row {
@@ -42,7 +50,6 @@
             background: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.85);
             box-sizing: border-box;
-            transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
         }
 
         .map-check input[type="checkbox"]:checked + .map-check__dot {
@@ -50,9 +57,55 @@
             border-color: #ca7149;
             box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
         }
-    </style>
 
-    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
+        .code-snippet-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px auto;
+            width: 95%;
+            max-width: 1400px;
+        }
+
+        .code-box {
+            position: relative;
+            flex: 1 1 600px;
+            max-width: 700px;
+        }
+
+        .code-box h3 {
+            color: #f3793e;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .code-box textarea {
+            width: 100%;
+            height: 400px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            color: #000;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ca7149;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -69,7 +122,7 @@
         <div style="display:flex;justify-content:center;margin-top:10px;">
             <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
                  alt="Unpaid Intern Logo"
-                 style="width:100px;height:100px;border-radius:50%;object-fit:cover;">
+                 style="width:100px;height:100px;border-radius:50%;">
         </div>
 
         <h2>Hi! I'm your personal UPI</h2>
@@ -86,31 +139,25 @@
 
             <div class="toggle-row">
                 <label class="switch-label">
-                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
+                    <input type="checkbox" name="geo_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Geolocation Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
+                    <input type="checkbox" name="mslp_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">SRP / MSLP Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
+                    <input type="checkbox" name="single_image_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Single Image Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Single Image (Banner)</div>
-                </label>
-
-                <label class="switch-label">
-                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
+                    <input type="checkbox" name="hubpage_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Hubpage Template</div>
                 </label>
@@ -118,9 +165,9 @@
 
             <div class="map-check-row">
                 <label class="map-check">
-                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
+                    <input type="checkbox" name="map_outro_toggle">
                     <span class="map-check__dot"></span>
-                    <div class="switch-text">Outro w/ Map</div>
+                    <div class="switch-text">Outro w/Map</div>
                 </label>
             </div>
 
@@ -128,39 +175,52 @@
 
         {% if download_url %}
         <div class="download-container">
-            <a class="download-button" href="{{ download_url }}" download>
-                Download Output File
-            </a>
+            <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
         </div>
         {% endif %}
+
+        <!-- DealerOn / DealerInspire -->
+        <div class="code-snippet-container">
+
+            <div class="code-box">
+                <h3>DealerOn Map / Contact</h3>
+                <textarea readonly>
+<div class="row">
+  <div class="col-md-12 col-md-6">
+    <iframe src="MAP_URL" style="width:100%;height:650px;border:0;"></iframe>
+  </div>
+  <div class="col-md-12 col-md-6">
+    #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+  </div>
+</div>
+                </textarea>
+            </div>
+
+            <div class="code-box">
+                <h3>DealerInspire Map / Contact</h3>
+                <textarea readonly>
+<div class="row">
+  <div class="col-md-12 col-md-6">
+    <iframe src="MAP_URL" style="width:100%;height:650px;border:0;"></iframe>
+  </div>
+  <div class="col-md-12 col-md-6">
+    [gravityform id="3" title="true" description="true"]
+  </div>
+</div>
+                </textarea>
+            </div>
+
+        </div>
 
     </div>
 
     <script>
         CKEDITOR.replace('html_content', {
             height: 200,
-            width: '100%',
+            width: 600,
             allowedContent: true,
             autoParagraph: false,
             removePlugins: 'elementspath,resize'
-        });
-
-        const toggles = [
-            geo_toggle,
-            mslp_toggle,
-            single_image_toggle,
-            single_banner_toggle,
-            hubpage_toggle
-        ];
-
-        toggles.forEach(toggle => {
-            toggle.addEventListener('change', () => {
-                if (toggle.checked) {
-                    toggles.forEach(t => {
-                        if (t !== toggle) t.checked = false;
-                    });
-                }
-            });
         });
     </script>
 
