@@ -4,13 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Stream Companies Content Generator</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- CKEditor -->
-    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
-
+    <!-- Layout Styles -->
     <style>
+        .code-snippet-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .code-box {
+            width: 48%;
+            box-sizing: border-box;
+        }
+        .code-box textarea {
+            width: 100%;
+            height: 400px;
+            box-sizing: border-box;
+        }
+        @media (max-width: 900px) {
+            .code-box {
+                width: 100%;
+            }
+        }
+
         .editor-container {
             display: flex;
             justify-content: center;
@@ -50,6 +68,7 @@
             background: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.85);
             box-sizing: border-box;
+            transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
         }
 
         .map-check input[type="checkbox"]:checked + .map-check__dot {
@@ -58,58 +77,51 @@
             box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
         }
 
-        .code-snippet-container {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 40px auto;
-            width: 95%;
-            max-width: 1400px;
+        .map-check input[type="checkbox"]:focus-visible + .map-check__dot {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
         }
 
-        .code-box {
-            position: relative;
-            flex: 1 1 600px;
-            max-width: 700px;
+        /* ---------- CKEditor Maximize Fix (Source fullscreen height) ---------- */
+        body.cke_maximized {
+            padding-top: 0 !important;
+            height: 100vh !important;
+            overflow: hidden !important;
         }
 
-        .code-box h3 {
-            color: #f3793e;
-            margin-bottom: 8px;
-            text-align: center;
+        body.cke_maximized .banner {
+            display: none !important;
         }
 
-        .code-box textarea {
-            width: 100%;
-            height: 400px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 14px;
-            background-color: #f9f9f9;
-            color: #000;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            resize: none;
+        body.cke_maximized .content {
+            margin-top: 0 !important;
         }
 
-        .copy-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #ca7149;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
+        body.cke_maximized .cke {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+        }
+
+        body.cke_maximized .cke_contents {
+            height: calc(100vh - 120px) !important;
+        }
+
+        body.cke_maximized textarea.cke_source {
+            height: 100% !important;
+            min-height: 100% !important;
+            box-sizing: border-box !important;
         }
     </style>
+
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
 
 <body>
 
+    <!-- Header -->
     <div class="banner">
         <div class="logo-container">
             <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
@@ -117,55 +129,69 @@
         <h1>Stream Companies UPI (Content Generator)</h1>
     </div>
 
+    <!-- Main Content -->
     <div class="content">
 
-        <div style="display:flex;justify-content:center;margin-top:10px;">
+        <!-- UPI Logo -->
+        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
             <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
                  alt="Unpaid Intern Logo"
-                 style="width:100px;height:100px;border-radius:50%;">
+                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
         </div>
 
+        <br>
         <h2>Hi! I'm your personal UPI</h2>
 
+        <!-- Input Form -->
         <form method="POST">
 
+            <!-- HTML Editor -->
             <div class="editor-container">
-                <textarea id="html_content" name="html_content"></textarea>
+                <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here">Start typing your HTML here...</textarea>
             </div>
 
-            <div style="text-align:center;">
+            <!-- Submit Button -->
+            <div style="text-align: center;">
                 <button class="button" type="submit"><strong>↑</strong></button>
             </div>
 
+            <!-- Template Toggles -->
             <div class="toggle-row">
                 <label class="switch-label">
-                    <input type="checkbox" name="geo_toggle">
+                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Geolocation Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" name="mslp_toggle">
+                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
                     <span class="slider"></span>
-                    <div class="switch-text">SRP / MSLP Template</div>
+                    <div class="switch-text">SRP/MSLP Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" name="single_image_toggle">
+                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Single Image Template</div>
                 </label>
 
                 <label class="switch-label">
-                    <input type="checkbox" name="hubpage_toggle">
+                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Single Image Template (Banner)</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Hubpage Template</div>
                 </label>
             </div>
 
+            <!-- Map Option -->
             <div class="map-check-row">
                 <label class="map-check">
-                    <input type="checkbox" name="map_outro_toggle">
+                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
                     <span class="map-check__dot"></span>
                     <div class="switch-text">Outro w/Map</div>
                 </label>
@@ -173,54 +199,102 @@
 
         </form>
 
+        <!-- Download Output -->
         {% if download_url %}
         <div class="download-container">
             <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
         </div>
         {% endif %}
 
-        <!-- DealerOn / DealerInspire -->
+        <!-- Reference Snippets -->
         <div class="code-snippet-container">
 
             <div class="code-box">
-                <h3>DealerOn Map / Contact</h3>
-                <textarea readonly>
-<div class="row">
-  <div class="col-md-12 col-md-6">
-    <iframe src="MAP_URL" style="width:100%;height:650px;border:0;"></iframe>
-  </div>
-  <div class="col-md-12 col-md-6">
-    #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
-  </div>
-</div>
-                </textarea>
+                <h3>DealerOn map/contact form</h3>
+                <textarea id="codeBoxLeft" readonly>&lt;div class="row"&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+    &lt;/div&gt;
+&lt;/div&gt;</textarea>
+                <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
             </div>
 
             <div class="code-box">
-                <h3>DealerInspire Map / Contact</h3>
-                <textarea readonly>
-<div class="row">
-  <div class="col-md-12 col-md-6">
-    <iframe src="MAP_URL" style="width:100%;height:650px;border:0;"></iframe>
-  </div>
-  <div class="col-md-12 col-md-6">
-    [gravityform id="3" title="true" description="true"]
-  </div>
-</div>
-                </textarea>
+                <h3>DealerInspire map/contact form</h3>
+                <textarea id="codeBoxRight" readonly>&lt;div class="row"&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        [gravityform id="3" title="true" description="true"]
+    &lt;/div&gt;
+&lt;/div&gt;</textarea>
+                <button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
             </div>
 
         </div>
-
     </div>
 
+    <!-- Scripts -->
     <script>
-        CKEDITOR.replace('html_content', {
-            height: 200,
-            width: 600,
-            allowedContent: true,
-            autoParagraph: false,
-            removePlugins: 'elementspath,resize'
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = CKEDITOR.replace('html_content', {
+                height: 200,
+                width: 600,
+                allowedContent: true,
+                autoParagraph: false,
+                removePlugins: 'elementspath,resize'
+            });
+
+            function resizeMaximized(editorInstance) {
+                if (!document.body.classList.contains('cke_maximized')) return;
+
+                const container = editorInstance.container && editorInstance.container.$;
+                if (!container) return;
+
+                const top = container.querySelector('.cke_top')?.offsetHeight || 0;
+                const bottom = container.querySelector('.cke_bottom')?.offsetHeight || 0;
+                const contents = container.querySelector('.cke_contents');
+                if (!contents) return;
+
+                const h = window.innerHeight - top - bottom;
+                if (h > 0) contents.style.height = h + 'px';
+            }
+
+            editor.on('afterCommandExec', function(e) {
+                if (e.data && e.data.name === 'maximize') {
+                    setTimeout(function() { resizeMaximized(editor); }, 50);
+                }
+            });
+
+            editor.on('mode', function() {
+                setTimeout(function() { resizeMaximized(editor); }, 50);
+            });
+
+            window.addEventListener('resize', function() {
+                resizeMaximized(editor);
+            });
+
+            const templateToggles = [
+                document.getElementById('geo_toggle'),
+                document.getElementById('mslp_toggle'),
+                document.getElementById('single_image_toggle'),
+                document.getElementById('single_banner_toggle'),
+                document.getElementById('hubpage_toggle')
+            ];
+
+            templateToggles.forEach(toggle => {
+                toggle.addEventListener('change', () => {
+                    if (toggle.checked) {
+                        templateToggles.forEach(other => {
+                            if (other !== toggle) other.checked = false;
+                        });
+                    }
+                });
+            });
         });
     </script>
 
