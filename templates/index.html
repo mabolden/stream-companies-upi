@@ -14,15 +14,18 @@
             justify-content: center;
             flex-wrap: wrap;
         }
+
         .code-box {
             width: 48%;
             box-sizing: border-box;
         }
+
         .code-box textarea {
             width: 100%;
             height: 400px;
             box-sizing: border-box;
         }
+
         @media (max-width: 900px) {
             .code-box {
                 width: 100%;
@@ -77,11 +80,7 @@
             box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
         }
 
-        .map-check input[type="checkbox"]:focus-visible + .map-check__dot {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
-        }
-
-        /* ---------- CKEditor Maximize Fix (Source fullscreen height) ---------- */
+        /* CKEditor maximize behavior */
         body.cke_maximized {
             padding-top: 0 !important;
             height: 100vh !important;
@@ -133,13 +132,12 @@
     <div class="content">
 
         <!-- UPI Logo -->
-        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
+        <div style="display:flex;justify-content:center;align-items:center;margin-top:10px;">
             <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
                  alt="Unpaid Intern Logo"
-                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                 style="width:100px;height:100px;border-radius:50%;object-fit:cover;">
         </div>
 
-        <br>
         <h2>Hi! I'm your personal UPI</h2>
 
         <!-- Input Form -->
@@ -147,11 +145,11 @@
 
             <!-- HTML Editor -->
             <div class="editor-container">
-                <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here">Start typing your HTML here...</textarea>
+                <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here"></textarea>
             </div>
 
             <!-- Submit Button -->
-            <div style="text-align: center;">
+            <div style="text-align:center;">
                 <button class="button" type="submit"><strong>↑</strong></button>
             </div>
 
@@ -199,53 +197,42 @@
 
         </form>
 
-        <!-- Download Output -->
         {% if download_url %}
         <div class="download-container">
             <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
         </div>
         {% endif %}
-
-        <!-- Reference Snippets -->
-        <div class="code-snippet-container">
-
-            <div class="code-box">
-                <h3>DealerOn map/contact form</h3>
-                <textarea id="codeBoxLeft" readonly>&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
-    &lt;/div&gt;
-&lt;/div&gt;</textarea>
-                <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
-            </div>
-
-            <div class="code-box">
-                <h3>DealerInspire map/contact form</h3>
-                <textarea id="codeBoxRight" readonly>&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        [gravityform id="3" title="true" description="true"]
-    &lt;/div&gt;
-&lt;/div&gt;</textarea>
-                <button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
-            </div>
-
-        </div>
     </div>
 
     <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+
             const editor = CKEDITOR.replace('html_content', {
                 height: 200,
                 width: 600,
-                allowedContent: true,
+
+                /* Content filtering */
+                allowedContent: false,
+                extraAllowedContent: 'h1 h2 h3 h4 h5 h6 p ul ol li strong em a[href] br',
+
+                /* Formatting behavior */
+                format_tags: 'p;h1;h2;h3;h4;h5;h6',
                 autoParagraph: false,
+
+                /* Paste handling */
+                forcePasteAsPlainText: true,
+                pasteFromWordRemoveFontStyles: true,
+                pasteFromWordRemoveStyles: true,
+
+                /* Inline style suppression */
+                removeFormatAttributes: 'style,font,span',
+                removeFormatTags: 'span',
+
+                /* Editor display styling */
+                contentsCss: '/static/style.css',
+
+                /* Plugin cleanup */
                 removePlugins: 'elementspath,resize'
             });
 
@@ -264,17 +251,17 @@
                 if (h > 0) contents.style.height = h + 'px';
             }
 
-            editor.on('afterCommandExec', function(e) {
+            editor.on('afterCommandExec', function (e) {
                 if (e.data && e.data.name === 'maximize') {
-                    setTimeout(function() { resizeMaximized(editor); }, 50);
+                    setTimeout(function () { resizeMaximized(editor); }, 50);
                 }
             });
 
-            editor.on('mode', function() {
-                setTimeout(function() { resizeMaximized(editor); }, 50);
+            editor.on('mode', function () {
+                setTimeout(function () { resizeMaximized(editor); }, 50);
             });
 
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 resizeMaximized(editor);
             });
 
@@ -295,6 +282,7 @@
                     }
                 });
             });
+
         });
     </script>
 
