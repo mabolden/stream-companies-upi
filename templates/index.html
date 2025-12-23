@@ -208,26 +208,31 @@
                 height: 200,
                 width: 600,
 
-                allowedContent: false,
-                extraAllowedContent: 'h1 h2 h3 h4 h5 h6 p ul ol li strong em a[href] br',
+                /* Content handling */
+                allowedContent: true,
 
+                /* Formatting */
                 format_tags: 'p;h1;h2;h3;h4;h5;h6',
                 autoParagraph: false,
 
-                forcePasteAsPlainText: true,
+                /* Paste handling */
+                forcePasteAsPlainText: false,
                 pasteFromWordRemoveFontStyles: true,
                 pasteFromWordRemoveStyles: true,
 
-                removeFormatAttributes: 'style,font,span',
-                removeFormatTags: 'span',
+                /* Font cleanup */
+                removeFormatAttributes: 'font',
+                removeFormatTags: 'font',
 
+                /* Editor appearance */
                 contentsCss: [
                     'data:text/css,' +
-                    'body{background:#ffffff;color:#000;font-family:Arial,Helvetica,sans-serif;padding:12px;}' +
+                    'body{background:#ffffff;color:#000000;font-family:Arial,Helvetica,sans-serif;padding:12px;}' +
                     'h1{font-size:2em;}h2{font-size:1.6em;}h3{font-size:1.35em;}' +
                     'h4{font-size:1.15em;}h5{font-size:1em;}h6{font-size:.9em;}'
                 ],
 
+                /* Plugin configuration */
                 removePlugins: 'elementspath,resize'
             });
 
