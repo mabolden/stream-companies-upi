@@ -1,3 +1,11 @@
+/* =========================
+   Base Layout
+   ========================= */
+
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #024a76;
@@ -13,8 +21,8 @@ body {
 }
 
 /* =========================
-   Header / Banner
-========================= */
+   Fixed Header
+   ========================= */
 
 .banner {
     display: flex;
@@ -47,8 +55,8 @@ body {
 }
 
 /* =========================
-   Main Content
-========================= */
+   Content Wrapper
+   ========================= */
 
 .content {
     margin-top: 20px;
@@ -57,80 +65,45 @@ body {
 }
 
 /* =========================
-   Editor / Search Area
-========================= */
+   CKEditor Base Styling
+   ========================= */
 
-.search-container {
-    display: flex;
-    align-items: center;
-    width: 95%;
-    max-width: 800px;
-    background-color: #4b5c6d;
-    border-radius: 50px;
-    padding: 10px 20px;
-    border: 1px solid #97adb9;
-    margin: 0 auto;
-}
-
-textarea {
-    flex-grow: 1;
-    background-color: transparent;
-    color: white;
-    border: none;
-    outline: none;
-    font-size: 24px;
-    padding: 12px;
-    resize: none;
-    min-height: 40px;
-    max-height: 200px;
-    border-radius: 10px;
-}
-
-.button {
-    background-color: #ca7149;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    margin-left: 10px;
-    border-radius: 50px;
-    font-size: 24px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.button:hover {
-    background-color: #a35d3a;
+.cke_source {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-family: monospace !important;
 }
 
 /* =========================
-   Download Button
-========================= */
+   CKEditor Fullscreen / Source Mode Fix
+   ========================= */
 
-.download-container {
-    margin-top: 20px;
-    text-align: center;
+body.cke_maximized {
+    overflow: hidden;
 }
 
-.download-button {
-    background-color: #2ec2d5;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 50px;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: 0.3s;
-    display: inline-block;
+body.cke_maximized .cke {
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: calc(100vh - 60px) !important;
+    z-index: 2000 !important;
 }
 
-.download-button:hover {
-    background-color: #1aa6b8;
+body.cke_maximized .cke_contents {
+    height: calc(100vh - 60px - 120px) !important;
+}
+
+body.cke_maximized textarea.cke_source {
+    height: 100% !important;
 }
 
 /* =========================
-   Toggles
-========================= */
+   Toggles & Controls
+   ========================= */
 
 .toggle-row {
     display: flex;
@@ -138,14 +111,6 @@ textarea {
     gap: 30px;
     margin-top: 30px;
     flex-wrap: wrap;
-}
-
-.toggle-single {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
 }
 
 .switch-label {
@@ -200,8 +165,46 @@ input:checked + .slider::before {
 }
 
 /* =========================
-   Code Snippets
-========================= */
+   Map Checkbox
+   ========================= */
+
+.map-check-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+}
+
+.map-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.map-check input {
+    position: absolute;
+    opacity: 0;
+}
+
+.map-check__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.map-check input:checked + .map-check__dot {
+    background: #ca7149;
+    border-color: #ca7149;
+    box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
+}
+
+/* =========================
+   Code Snippet Blocks
+   ========================= */
 
 .code-snippet-container {
     display: flex;
@@ -236,44 +239,31 @@ input:checked + .slider::before {
     border-radius: 8px;
     border: 1px solid #ccc;
     resize: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.copy-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+/* =========================
+   Buttons
+   ========================= */
+
+.button {
     background-color: #ca7149;
     color: white;
     border: none;
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 6px;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 24px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.copy-button:hover {
+.button:hover {
     background-color: #a35d3a;
 }
 
-/* =========================
-   CKEditor Source View
-========================= */
-
-.cke_source {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    font-family: monospace !important;
+.download-button {
+    background-color: #2ec2d5;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    text-decoration: none;
 }
-
-/* =========================
-   Headings (Content Only)
-========================= */
-
-.content h1 { font-size: 2.25rem !important; }
-.content h2 { font-size: 1.875rem !important; }
-.content h3 { font-size: 1.5rem !important; }
-.content h4 { font-size: 1.25rem !important; }
-.content h5 { font-size: 1.125rem !important; }
-.content h6 { font-size: 1rem !important; }
