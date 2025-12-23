@@ -40,46 +40,6 @@
             width: 100%;
         }
 
-        .cke_editor_html_content {
-            margin: 0 auto;
-        }
-
-        .map-check-row {
-            display: flex;
-            justify-content: center;
-            margin-top: 18px;
-        }
-
-        .map-check {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .map-check input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .map-check__dot {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            box-sizing: border-box;
-            transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-        }
-
-        .map-check input[type="checkbox"]:checked + .map-check__dot {
-            background: #ca7149;
-            border-color: #ca7149;
-            box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
-        }
-
         /* CKEditor maximize behavior */
         body.cke_maximized {
             padding-top: 0 !important;
@@ -120,7 +80,6 @@
 
 <body>
 
-    <!-- Header -->
     <div class="banner">
         <div class="logo-container">
             <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
@@ -128,10 +87,8 @@
         <h1>Stream Companies UPI (Content Generator)</h1>
     </div>
 
-    <!-- Main Content -->
     <div class="content">
 
-        <!-- UPI Logo -->
         <div style="display:flex;justify-content:center;align-items:center;margin-top:10px;">
             <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
                  alt="Unpaid Intern Logo"
@@ -140,59 +97,14 @@
 
         <h2>Hi! I'm your personal UPI</h2>
 
-        <!-- Input Form -->
         <form method="POST">
 
-            <!-- HTML Editor -->
             <div class="editor-container">
                 <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here"></textarea>
             </div>
 
-            <!-- Submit Button -->
             <div style="text-align:center;">
                 <button class="button" type="submit"><strong>↑</strong></button>
-            </div>
-
-            <!-- Template Toggles -->
-            <div class="toggle-row">
-                <label class="switch-label">
-                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Geolocation Template</div>
-                </label>
-
-                <label class="switch-label">
-                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">SRP/MSLP Template</div>
-                </label>
-
-                <label class="switch-label">
-                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Single Image Template</div>
-                </label>
-
-                <label class="switch-label">
-                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Single Image Template (Banner)</div>
-                </label>
-
-                <label class="switch-label">
-                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Hubpage Template</div>
-                </label>
-            </div>
-
-            <!-- Map Option -->
-            <div class="map-check-row">
-                <label class="map-check">
-                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
-                    <span class="map-check__dot"></span>
-                    <div class="switch-text">Outro w/Map</div>
-                </label>
             </div>
 
         </form>
@@ -202,9 +114,9 @@
             <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
         </div>
         {% endif %}
+
     </div>
 
-    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
@@ -216,7 +128,7 @@
                 allowedContent: false,
                 extraAllowedContent: 'h1 h2 h3 h4 h5 h6 p ul ol li strong em a[href] br',
 
-                /* Formatting behavior */
+                /* Formatting */
                 format_tags: 'p;h1;h2;h3;h4;h5;h6',
                 autoParagraph: false,
 
@@ -229,58 +141,15 @@
                 removeFormatAttributes: 'style,font,span',
                 removeFormatTags: 'span',
 
-                /* Editor display styling */
-                contentsCss: '/static/style.css',
+                /* Editor appearance (isolated, neutral) */
+                contentsCss: [
+                    'data:text/css,' +
+                    'body{background:#ffffff;color:#000000;font-family:Arial,Helvetica,sans-serif;padding:12px;}' +
+                    'h1{font-size:2em;}h2{font-size:1.6em;}h3{font-size:1.35em;}' +
+                    'h4{font-size:1.15em;}h5{font-size:1em;}h6{font-size:.9em;}'
+                ],
 
-                /* Plugin cleanup */
                 removePlugins: 'elementspath,resize'
-            });
-
-            function resizeMaximized(editorInstance) {
-                if (!document.body.classList.contains('cke_maximized')) return;
-
-                const container = editorInstance.container && editorInstance.container.$;
-                if (!container) return;
-
-                const top = container.querySelector('.cke_top')?.offsetHeight || 0;
-                const bottom = container.querySelector('.cke_bottom')?.offsetHeight || 0;
-                const contents = container.querySelector('.cke_contents');
-                if (!contents) return;
-
-                const h = window.innerHeight - top - bottom;
-                if (h > 0) contents.style.height = h + 'px';
-            }
-
-            editor.on('afterCommandExec', function (e) {
-                if (e.data && e.data.name === 'maximize') {
-                    setTimeout(function () { resizeMaximized(editor); }, 50);
-                }
-            });
-
-            editor.on('mode', function () {
-                setTimeout(function () { resizeMaximized(editor); }, 50);
-            });
-
-            window.addEventListener('resize', function () {
-                resizeMaximized(editor);
-            });
-
-            const templateToggles = [
-                document.getElementById('geo_toggle'),
-                document.getElementById('mslp_toggle'),
-                document.getElementById('single_image_toggle'),
-                document.getElementById('single_banner_toggle'),
-                document.getElementById('hubpage_toggle')
-            ];
-
-            templateToggles.forEach(toggle => {
-                toggle.addEventListener('change', () => {
-                    if (toggle.checked) {
-                        templateToggles.forEach(other => {
-                            if (other !== toggle) other.checked = false;
-                        });
-                    }
-                });
             });
 
         });
