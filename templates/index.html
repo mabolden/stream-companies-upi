@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Stream Companies Content Generator</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- Layout Styles -->
@@ -80,6 +81,7 @@
 
 <body>
 
+    <!-- Header -->
     <div class="banner">
         <div class="logo-container">
             <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
@@ -87,8 +89,10 @@
         <h1>Stream Companies UPI (Content Generator)</h1>
     </div>
 
+    <!-- Main Content -->
     <div class="content">
 
+        <!-- UPI Logo -->
         <div style="display:flex;justify-content:center;align-items:center;margin-top:10px;">
             <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
                  alt="Unpaid Intern Logo"
@@ -97,26 +101,106 @@
 
         <h2>Hi! I'm your personal UPI</h2>
 
+        <!-- Input Form -->
         <form method="POST">
 
+            <!-- HTML Editor -->
             <div class="editor-container">
                 <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here"></textarea>
             </div>
 
+            <!-- Submit Button -->
             <div style="text-align:center;">
                 <button class="button" type="submit"><strong>↑</strong></button>
             </div>
 
+            <!-- Template Toggles -->
+            <div class="toggle-row">
+                <label class="switch-label">
+                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Geolocation Template</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">SRP/MSLP Template</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Single Image Template</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Single Image Template (Banner)</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Hubpage Template</div>
+                </label>
+            </div>
+
+            <!-- Map Option -->
+            <div class="map-check-row">
+                <label class="map-check">
+                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
+                    <span class="map-check__dot"></span>
+                    <div class="switch-text">Outro w/Map</div>
+                </label>
+            </div>
+
         </form>
 
+        <!-- Download Output -->
         {% if download_url %}
         <div class="download-container">
             <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
         </div>
         {% endif %}
 
+        <!-- Reference Snippets -->
+        <div class="code-snippet-container">
+
+            <div class="code-box">
+                <h3>DealerOn map/contact form</h3>
+                <textarea readonly>
+<div class="row">
+  <div class="col-md-12 col-md-6">
+    <iframe src="https://www.example.com/fillermap" style="border:0;width:100%;height:650px;"></iframe>
+  </div>
+  <div class="col-md-12 col-md-6">
+    #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+  </div>
+</div>
+                </textarea>
+            </div>
+
+            <div class="code-box">
+                <h3>DealerInspire map/contact form</h3>
+                <textarea readonly>
+<div class="row">
+  <div class="col-md-12 col-md-6">
+    <iframe src="https://www.example.com/fillermap" style="border:0;width:100%;height:650px;"></iframe>
+  </div>
+  <div class="col-md-12 col-md-6">
+    [gravityform id="3" title="true" description="true"]
+  </div>
+</div>
+                </textarea>
+            </div>
+
+        </div>
+
     </div>
 
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
@@ -124,32 +208,47 @@
                 height: 200,
                 width: 600,
 
-                /* Content filtering */
                 allowedContent: false,
                 extraAllowedContent: 'h1 h2 h3 h4 h5 h6 p ul ol li strong em a[href] br',
 
-                /* Formatting */
                 format_tags: 'p;h1;h2;h3;h4;h5;h6',
                 autoParagraph: false,
 
-                /* Paste handling */
                 forcePasteAsPlainText: true,
                 pasteFromWordRemoveFontStyles: true,
                 pasteFromWordRemoveStyles: true,
 
-                /* Inline style suppression */
                 removeFormatAttributes: 'style,font,span',
                 removeFormatTags: 'span',
 
-                /* Editor appearance (isolated, neutral) */
                 contentsCss: [
                     'data:text/css,' +
-                    'body{background:#ffffff;color:#000000;font-family:Arial,Helvetica,sans-serif;padding:12px;}' +
+                    'body{background:#ffffff;color:#000;font-family:Arial,Helvetica,sans-serif;padding:12px;}' +
                     'h1{font-size:2em;}h2{font-size:1.6em;}h3{font-size:1.35em;}' +
                     'h4{font-size:1.15em;}h5{font-size:1em;}h6{font-size:.9em;}'
                 ],
 
                 removePlugins: 'elementspath,resize'
+            });
+
+            const toggles = [
+                'geo_toggle',
+                'mslp_toggle',
+                'single_image_toggle',
+                'single_banner_toggle',
+                'hubpage_toggle'
+            ];
+
+            toggles.forEach(id => {
+                document.getElementById(id).addEventListener('change', function () {
+                    if (this.checked) {
+                        toggles.forEach(otherId => {
+                            if (otherId !== id) {
+                                document.getElementById(otherId).checked = false;
+                            }
+                        });
+                    }
+                });
             });
 
         });
