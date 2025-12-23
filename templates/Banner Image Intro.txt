@@ -1,0 +1,33 @@
+        <h1>{{HEADING_1}}</h1>
+
+<section class="autorepo_image-banner" data-theme-background-color="primary" data-theme-font-color="white" data-theme-img-position="top" data-include-banner="no"> 
+
+ 
+
+<figure> 
+
+<img src="https://autorepo.streamcompanies.com/wp-content/uploads/2023/06/placeholder.jpg" alt="Your alt text here" class="autorepo_desktop-image"> 
+
+<img src="https://autorepo.streamcompanies.com/wp-content/uploads/2023/06/placeholder.jpg" alt="Your alt text here" class="autorepo_mobile-image"> 
+
+</figure> 
+
+</section> 
+
+ 
+
+<section class="autorepo_outros-row" data-theme-background-color="light-gray" data-theme-font-color="black" data-has-map="no"> 
+
+<div class="autorepo_content-box"> 
+
+<hr> 
+
+        <div class="autorepo_content">{{BODY_1}}</div>
+
+<div class="autorepo_btns-container" data-btn-count="zero" data-btn-background-color="primary" data-btn-type="outlined" data-btn-shape="" data-btn-width="inline-standalone" data-btn-font-color="primary"></div>	 
+
+</div>	 
+
+ 
+
+</section> 

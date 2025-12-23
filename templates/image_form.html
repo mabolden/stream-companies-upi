@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fill Image Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="content">
+        <h2>Provide Image URLs and Alt Texts</h2>
+        <form method="POST" action="/finalize-template">
+            {% for i in range(image_count) %}
+                <div style="margin: 20px 0;">
+                    <label for="img_url_{{ i }}">Image {{ i + 1 }} URL:</label><br>
+                    <input type="text" id="img_url_{{ i }}" name="img_url_{{ i }}" style="width: 60%;" required><br>
+                    <label for="alt_text_{{ i }}">Alt Text {{ i + 1 }}:</label><br>
+                    <input type="text" id="alt_text_{{ i }}" name="alt_text_{{ i }}" style="width: 60%;" required>
+                </div>
+            {% endfor %}
+            <input type="hidden" name="template_html" value="{{ template_html|tojson }}">
+            <button type="submit" class="button">Finalize Template</button>
+        </form>
+    </div>
+</body>
+</html>

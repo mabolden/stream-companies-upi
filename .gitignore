@@ -1,0 +1,61 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# =========================
+# Node / Electron
+# =========================
+node_modules/
+dist/
+build/
+release/
+backend/
+
+# =========================
+# Electron / binaries
+# =========================
+*.exe
+*.dll
+*.asar
+*.blockmap
+
+# =========================
+# Logs / runtime
+# =========================
+*.log
+/cache/
+
+# =========================
+# Environment / data
+# =========================
+*.env
+*.sqlite3
+*.db
+
+# =========================
+# System files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Temp / backups
+# =========================
+*.bak
+*.swp

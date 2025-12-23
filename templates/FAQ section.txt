@@ -1,0 +1,7 @@
+<h2 style="text-align: center; font-weight: bold;">FAQs</h2>
+<section class="autorepo_accordion-panel" data-theme-background-color="white" data-theme-font-color="black"
+         data-accordion-count="3" data-accordion-count-min="1" data-accordion-count-max="8" data-container-padding="yes">
+  
+  {{FAQ_ITEMS}}
+
+</section>

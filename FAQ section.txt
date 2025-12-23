@@ -1,0 +1,35 @@
+
+<h2>FAQs</h2>
+<section class="autorepo_accordion-panel" data-theme-background-color="white" data-theme-font-color="black" data-accordion-count="three" data-accordion-count-min="2" data-accordion-count-max="6" data-container-padding="yes"> <div class="autorepo_accordion">
+				<summary>Panel Title Goes Here</summary>
+				<div class="autorepo_content-card" data-include-img="yes" data-theme-img-position="left" data-theme-background-color="white">
+					<figure>
+					</figure>
+					<div class="autorepo_content-box">
+						<div class="autorepo_content-text">
+							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa enim nec dui nunc mattis enim. Nec nam aliquam sem et tortor consequat id porta. Faucibus purus in massa tempor nec feugiat.</p>
+						</div>
+					</div>
+				</div>
+			</details></div> <div class="autorepo_accordion">
+				<summary>Panel Title Goes Here</summary>
+				<div class="autorepo_content-card" data-include-img="yes" data-theme-img-position="left" data-theme-background-color="white">
+					<figure>
+					</figure>
+					<div class="autorepo_content-box">
+						<div class="autorepo_content-text">
+							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa enim nec dui nunc mattis enim. Nec nam aliquam sem et tortor consequat id porta. Faucibus purus in massa tempor nec feugiat.</p>
+						</div>
+					</div>
+				</div>
+			</details></div> <div class="autorepo_accordion">
+				<summary>Panel Title Goes Here</summary>
+				<div class="autorepo_content-card" data-include-img="yes" data-theme-img-position="left" data-theme-background-color="white">
+					<figure>
+					</figure>
+					<div class="autorepo_content-box">
+						<div class="autorepo_content-text">
+							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Massa enim nec dui nunc mattis enim. Nec nam aliquam sem et tortor consequat id porta. Faucibus purus in massa tempor nec feugiat.</p>
+						</div>
+					</div>
+				</div>

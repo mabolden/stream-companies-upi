@@ -1,0 +1,21 @@
+<section class="autorepo_side-side-block" data-card-background-color="light-gray" data-theme-font-color="black">
+<div class="autorepo_content-card">
+<div class="autorepo_content-box">
+			<h2>{{HEADING_1}}</h2>	
+
+			<div class="autorepo_content">{{BODY_1}}</div>
+
+</div>
+</div>
+
+<div class="autorepo_content-card">
+<div class="autorepo_content-box">
+			<h2>{{HEADING_2}}</h2>	
+
+			<div class="autorepo_content">{{BODY_2}}</div>
+
+</div>
+</div>
+</section>
+
+<hr style="border-color:#222222;" />

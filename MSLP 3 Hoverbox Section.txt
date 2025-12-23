@@ -1,0 +1,30 @@
+<section class="autorepo_side-side-block" data-card-background-color="white" data-theme-font-color="black" style="display: flex; margin: 5px; padding: 5px;">
+    <div class="autorepo_content-card" style="flex: 1; margin: 5px; padding: 5px;">
+        <div class="autorepo_content-box">
+			<h2>{{HEADING_1}}</h2>	
+            <hr>
+			<div class="autorepo_content">{{BODY_1}}</div>
+
+            <div class="autorepo_btns-container" data-btn-count="zero" data-btn-min="0" data-btn-max="1" data-btn-font-color="primary" data-btn-background-color="primary" data-btn-type="outlined" data-btn-shape="" data-btn-width="inline-standalone"></div>
+        </div>
+    </div>
+    <!-- Repeat 2 more cards as needed -->
+    <div class="autorepo_content-card" style="flex: 1; margin: 5px; padding: 5px;">
+        <div class="autorepo_content-box">
+			<h2>{{HEADING_2}}</h2>	
+            <hr>
+			<div class="autorepo_content">{{BODY_2}}</div>
+
+            <div class="autorepo_btns-container" data-btn-count="zero" data-btn-min="0" data-btn-max="1" data-btn-font-color="primary" data-btn-background-color="primary" data-btn-type="outlined" data-btn-shape="" data-btn-width="inline-standalone"></div>
+        </div>
+    </div>
+    <div class="autorepo_content-card" style="flex: 1; margin: 5px; padding: 5px;">
+        <div class="autorepo_content-box">
+			<h2>{{HEADING_3}}</h2>	
+            <hr>
+  			<div class="autorepo_content">{{BODY_3}}</div>
+
+            <div class="autorepo_btns-container" data-btn-count="zero" data-btn-font-color="primary" data-btn-background-color="primary" data-btn-type="outlined" data-btn-shape="" data-btn-width="inline-standalone"></div>
+        </div>
+    </div>
+</section>

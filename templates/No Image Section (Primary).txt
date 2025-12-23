@@ -1,0 +1,11 @@
+<section class="autorepo_content-without-image" data-theme-background-color="primary" data-theme-font-color="white" data-container-padding="yes"> 
+
+<div class="autorepo_content-box"> 
+
+        <h2>{{HEADING_1}}</h2>
+
+        <div class="autorepo_content">{{BODY_1}}</div>
+
+</div> 
+
+</section> 

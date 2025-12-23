@@ -1,0 +1,22 @@
+<section class="autorepo_content-with-image" data-theme-img-position="left" data-theme-background-color="white" data-theme-font-color="black" data-theme-img-wrap="wrap" data-container-padding="yes"> 
+<figure>
+<img src="https://placehold.co/900x900?text=900x900+Height+Can+Be+Variable" alt="Your alt text here">
+</figure>
+<div class="autorepo_content-box">
+<h1>{{HEADING_1}}</h1>
+        
+<div class="autorepo_content">{{BODY_1}}</div>
+</div>
+</section>
+
+<center> 
+	<h3>HUB PAGE TITLE</h3> 
+<select onchange="window.location.href=this.value" style="width: 65%"> 
+
+<option value="">SELECT ONE</option> 
+<option value="#">ADD CONTENT HERE</option>
+
+ </select>
+ </center>
+
+<hr style="border-color:#222222;" />

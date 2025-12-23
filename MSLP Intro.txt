@@ -1,0 +1,15 @@
+<section class="autorepo_outros-row" data-has-map="no" data-theme-background-color="light-gray" data-theme-font-color="black">
+    <div class="autorepo_content-box">
+        <h1>{{HEADING_1}}</h1>
+        <hr>
+                <div class="autorepo_content">{{BODY_1}}</div>
+
+        <section class="autorepo_button-cta-row">
+            <div class="autorepo_btns-container" data-btn-count="3" data-btn-background-color="dark-gray" data-btn-type="filled" data-btn-shape="square" data-btn-width="inline-group" data-btn-font-color="white">
+                <a href="#">Value Your Trade</a>
+                <a href="#">Shop New Inventory</a>
+                <a href="#">Shop Used Inventory</a>
+            </div>
+        </section>
+    </div>
+</section>

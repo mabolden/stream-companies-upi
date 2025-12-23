@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! Try Again</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #f3e5ab; 
+            margin-top: 50px; 
+        }
+        .game-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            margin-top: 30px; 
+        }
+        
+        /* SUPER BIG Coffee Mug */
+        .mug-container {
+            position: relative;
+            width: 800px; /* HUGE Mug */
+            height: auto;
+        }
+        .coffee-mug {
+            width: 100%; /* Mug scales with container */
+            height: auto;
+        }
+
+        /* Keep the fill meter small */
+        .coffee-fill {
+            width: 90px; /* Keep meter size small */
+            height: 0; /* Start empty */
+            background-color: #6f4e37;
+            position: absolute;
+            bottom: 28%; /* Slightly above previous position */
+            left: 47%; /* Shifted slightly to the right from 45% */
+            transform: translateX(-50%); /* Ensure centering */
+            border-radius: 0 0 40px 40px;
+            transition: height 0.2s ease-in-out;
+        }
+
+        /* Bigger Coffee Pot */
+        .coffee-pot {
+            width: 160px; /* Bigger Coffee Pot */
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #progress { font-size: 22px; font-weight: bold; }
+        .win-message { display: none; font-size: 26px; font-weight: bold; color: green; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Oops! Try Again</h1>
+    <h3>But first, coffee! ☕ Hold the coffee pot to fill your cup.</h3>
+    <p>{{ error_message }}</p>
+    
+    <div class="game-container">
+        <div class="mug-container">
+            <img src="{{ url_for('static', filename='coffee_mug.png') }}" alt="Coffee Mug" class="coffee-mug">
+            <div id="coffeeFill" class="coffee-fill"></div>
+        </div>
+        <br>
+        <img id="coffeePot" class="coffee-pot" src="{{ url_for('static', filename='coffee_pot.png') }}" alt="Coffee Pot">
+        <p id="progress">0%</p>
+        <p id="winMessage" class="win-message">🎉 I'm Re-Energized!⚡⚡ Let's Try Again... ☕</p>
+    </div>
+
+    <audio id="pourSound" src="{{ url_for('static', filename='coffee_pour.mp3') }}"></audio>
+
+    <script>
+        let holdTime = 0;
+        let interval;
+        const fillDuration = 4000; // Faster fill time (4 seconds)
+
+        function startPouring() {
+            let pourSound = document.getElementById("pourSound");
+            pourSound.currentTime = 0;
+            pourSound.play();
+
+            interval = setInterval(() => {
+                holdTime += 500;
+                let fillPercentage = Math.min((holdTime / fillDuration) * 100, 100);
+                document.getElementById("coffeeFill").style.height = fillPercentage + "px"; /* Keep height fixed */
+                document.getElementById("progress").textContent = Math.floor(fillPercentage) + "%";
+
+                if (holdTime >= fillDuration) {
+                    clearInterval(interval);
+                    document.getElementById("winMessage").style.display = "block";
+                    setTimeout(() => { window.location.href = "/"; }, 2000);
+                }
+            }, 500);
+        }
+
+        function stopPouring() {
+            clearInterval(interval);
+            let pourSound = document.getElementById("pourSound");
+            pourSound.pause();
+            pourSound.currentTime = 0;
+        }
+
+        document.getElementById("coffeePot").addEventListener("mousedown", startPouring);
+        document.getElementById("coffeePot").addEventListener("mouseup", stopPouring);
+        document.getElementById("coffeePot").addEventListener("touchstart", (e) => { e.preventDefault(); startPouring(); });
+        document.getElementById("coffeePot").addEventListener("touchend", stopPouring);
+    </script>
+</body>
+</html>

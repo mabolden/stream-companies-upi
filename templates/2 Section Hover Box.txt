@@ -1,0 +1,28 @@
+
+<section class="autorepo_hover-boxes-image" data-theme-background-color="light-gray" data-theme-font-color="black" data-card-background-color="white" data-hover-boxes-image-count="two" data-card-count-min="2" data-card-count-max="3"><div class="autorepo_content-box">
+		<div class="autorepo_hover-boxes-front">
+			<h2>{{HEADING_1}}</h2>	
+			<figure>
+				<img src="https://autorepo.streamcompanies.com/wp-content/uploads/2023/06/placeholder.jpg" alt="Your alt text here">
+			</figure>
+			<div class="autorepo_btns-container" data-btn-background-color="primary" data-btn-type="filled" data-btn-shape="rounded" data-btn-width="" data-btn-font-color="white">
+				<a href="#">Learn More</a>
+			</div>
+		</div>
+		<div class="autorepo_hover-boxes-back">
+			<div class="autorepo_content">{{BODY_1}}</div>
+		</div>
+	</div><div class="autorepo_content-box">
+		<div class="autorepo_hover-boxes-front">
+			<h2>{{HEADING_2}}</h2>	
+			<figure>
+				<img src="https://autorepo.streamcompanies.com/wp-content/uploads/2023/06/placeholder.jpg" alt="Your alt text here">
+			</figure>
+			<div class="autorepo_btns-container" data-btn-background-color="primary" data-btn-type="filled" data-btn-shape="rounded" data-btn-width="" data-btn-font-color="white">
+				<a href="#">Learn More</a>
+			</div>
+		</div>
+		<div class="autorepo_hover-boxes-back">
+			<div class="autorepo_content">{{BODY_2}}</div>
+		</div>
+	</div></section>

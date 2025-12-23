@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Oops! Coffee Time</title>
+</head>
+<body>
+    <h1>Oops! Something went wrong.</h1>
+    <p>But first, coffee! ☕ Hold the coffee pot to fill your cup.</p>
+
+    <div class="game-container">
+        <div class="coffee" id="coffee"></div>
+        <img src="{{ url_for('static', filename='coffee_mug.png') }}" alt="Coffee Mug">
+    </div>
+
+    <img src="{{ url_for('static', filename='coffee_pot.png') }}" alt="Coffee Pot"
+         onmousedown="startPouring()" onmouseup="stopPouring()" onmouseleave="stopPouring()">
+
+    <p id="message">Hold to pour coffee...</p>
+
+    <audio id="pourSound">
+        <source src="{{ url_for('static', filename='coffee_pour.mp3') }}" type="audio/mp3">
+    </audio>
+
+    <script>
+        let fillLevel = 0;
+        let pouring = false;
+        let pourSound = document.getElementById("pourSound");
+
+        function startPouring() {
+            pouring = true;
+            pourSound.currentTime = 0;
+            pourSound.play();
+            pourCoffee();
+        }
+
+        function stopPouring() {
+            pouring = false;
+            pourSound.pause();
+        }
+
+        function pourCoffee() {
+            if (pouring && fillLevel < 100) {
+                fillLevel += 2;
+                document.getElementById("coffee").style.height = fillLevel + "%";
+
+                if (fillLevel >= 100) {
+                    document.getElementById("message").innerText = "Cup is full! Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1500);
+                } else {
+                    setTimeout(pourCoffee, 100);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
