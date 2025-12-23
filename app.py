@@ -148,15 +148,12 @@ def render_blocks(blocks, global_h1_plain=None):
         with open(path, "r", encoding="utf-8") as f:
             template = f.read()
 
-        # Alt text replacement (only if template contains your placeholder)
         if global_h1_plain:
             template = template.replace("Your alt text here", global_h1_plain)
 
         for i, section in enumerate(chunk, start=1):
             template = template.replace(f"{{{{HEADING_{i}}}}}", clean_heading(section["heading"]))
             template = template.replace(f"{{{{BODY_{i}}}}}", "\n".join(section["paragraphs"]))
-
-            # H6 handling (insert ALL h6 tags)
             h6_joined = "\n".join(section.get("h6_list") or [])
             template = template.replace("{{BOTTOM_H6}}", h6_joined)
 
@@ -225,7 +222,6 @@ def build_single_image_banner_template(sections, use_map_outro=False, global_h1_
     )
 
 
-# ---------- MSLP Template ----------
 def build_mslp_template(sections, use_map_outro=False, global_h1_plain=None):
     if len(sections) < 4:
         return None, "Not enough sections for MSLP template."
@@ -262,7 +258,6 @@ def build_mslp_template(sections, use_map_outro=False, global_h1_plain=None):
     return render_blocks(blocks, global_h1_plain=global_h1_plain)
 
 
-# ---------- Hubpage Template ----------
 def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None):
     if len(sections) < 3:
         return None, "Not enough sections"
@@ -321,10 +316,11 @@ def index():
             return redirect(url_for("error_game"))
 
         sections = extract_sections(html)
+        if not sections:
+            return redirect(url_for("error_game"))
 
-        # Plain-text H1 for image alt replacement
-        h1_match = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.IGNORECASE | re.DOTALL)
-        global_h1_plain = strip_all_html(h1_match.group(1)) if h1_match else None
+        # Plain-text H1 derived from first section heading
+        global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
 
         if hubpage:
             output, error = build_hubpage_template(sections, map_toggle, global_h1_plain)
