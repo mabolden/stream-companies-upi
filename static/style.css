@@ -6,6 +6,12 @@ html, body {
     height: 100%;
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #024a76;
@@ -14,10 +20,9 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     padding-top: 80px;
-    box-sizing: border-box;
 }
 
 /* =========================
@@ -37,7 +42,6 @@ body {
     height: 60px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    box-sizing: border-box;
 }
 
 .banner img {
@@ -59,9 +63,10 @@ body {
    ========================= */
 
 .content {
-    margin-top: 20px;
-    text-align: center;
     width: 100%;
+    max-width: 1400px;
+    padding: 0 20px 40px;
+    text-align: center;
 }
 
 /* =========================
@@ -75,7 +80,7 @@ body {
 }
 
 /* =========================
-   CKEditor Fullscreen / Source Mode Fix
+   CKEditor Fullscreen Fix
    ========================= */
 
 body.cke_maximized {
@@ -94,7 +99,7 @@ body.cke_maximized .cke {
 }
 
 body.cke_maximized .cke_contents {
-    height: calc(100vh - 60px - 120px) !important;
+    height: calc(100vh - 180px) !important;
 }
 
 body.cke_maximized textarea.cke_source {
@@ -102,15 +107,16 @@ body.cke_maximized textarea.cke_source {
 }
 
 /* =========================
-   Toggles & Controls
+   Toggles
    ========================= */
 
 .toggle-row {
     display: flex;
     justify-content: center;
     gap: 30px;
-    margin-top: 30px;
+    margin: 30px auto 15px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .switch-label {
@@ -119,7 +125,7 @@ body.cke_maximized textarea.cke_source {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    font-size: 18px;
+    user-select: none;
 }
 
 .switch-label input {
@@ -135,7 +141,6 @@ body.cke_maximized textarea.cke_source {
     background-color: #97adb9;
     border-radius: 34px;
     transition: background-color 0.3s;
-    margin-bottom: 4px;
 }
 
 .slider::before {
@@ -145,21 +150,20 @@ body.cke_maximized textarea.cke_source {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: #ffffff;
     border-radius: 50%;
     transition: transform 0.3s;
 }
 
-input:checked + .slider {
+.switch-label input:checked + .slider {
     background-color: #ca7149;
 }
 
-input:checked + .slider::before {
+.switch-label input:checked + .slider::before {
     transform: translateX(26px);
 }
 
 .switch-text {
-    color: #dbe5e9;
     font-size: 14px;
     text-align: center;
 }
@@ -171,7 +175,8 @@ input:checked + .slider::before {
 .map-check-row {
     display: flex;
     justify-content: center;
-    margin-top: 18px;
+    margin: 15px auto 35px;
+    width: 100%;
 }
 
 .map-check {
@@ -185,6 +190,7 @@ input:checked + .slider::before {
 .map-check input {
     position: absolute;
     opacity: 0;
+    pointer-events: none;
 }
 
 .map-check__dot {
@@ -203,7 +209,7 @@ input:checked + .slider::before {
 }
 
 /* =========================
-   Code Snippet Blocks
+   Code Snippets
    ========================= */
 
 .code-snippet-container {
@@ -212,12 +218,10 @@ input:checked + .slider::before {
     justify-content: center;
     gap: 30px;
     margin: 40px auto;
-    width: 95%;
-    max-width: 1400px;
+    width: 100%;
 }
 
 .code-box {
-    position: relative;
     flex: 1 1 600px;
     max-width: 700px;
 }
@@ -225,7 +229,6 @@ input:checked + .slider::before {
 .code-box h3 {
     color: #f3793e;
     margin-bottom: 8px;
-    text-align: center;
 }
 
 .code-box textarea {
@@ -235,9 +238,9 @@ input:checked + .slider::before {
     font-family: monospace;
     font-size: 14px;
     background-color: #f9f9f9;
-    color: #000;
+    color: #000000;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
     resize: none;
 }
 
@@ -247,7 +250,7 @@ input:checked + .slider::before {
 
 .button {
     background-color: #ca7149;
-    color: white;
+    color: #ffffff;
     border: none;
     padding: 12px 20px;
     border-radius: 50px;
@@ -259,11 +262,19 @@ input:checked + .slider::before {
     background-color: #a35d3a;
 }
 
+/* CRITICAL FIX IS HERE */
 .download-button {
+    position: static;
+    display: inline-block;
     background-color: #2ec2d5;
-    color: white;
+    color: #ffffff;
     padding: 12px 20px;
     border-radius: 50px;
     font-size: 16px;
     text-decoration: none;
+    margin: 10px 0 30px;
+}
+
+.download-button:hover {
+    background-color: #22a9bb;
 }
