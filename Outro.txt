@@ -1,9 +1,0 @@
-<section class="autorepo_outros-row" data-theme-background-color="primary" data-theme-font-color="white" data-has-map="no">
-    <div class="autorepo_content-box">
-        <h2>{{HEADING_1}}</h2>
-        <hr>
-        <div class="autorepo_content">{{BODY_1}}</div>
-    </div>
-</section>
-
-<script class="stream-autorepo-framework" data-categories="essential" src="https://autorepo.streamcompanies.com/assets/v2/framework.js?manuf=style-subaru.css"></script>
