@@ -1,9 +1,0 @@
-<section class="autorepo_content-with-image" data-theme-img-position="right" data-theme-background-color="white" data-theme-font-color="black" data-theme-img-wrap="wrap" data-container-padding="yes">
-    <figure>
-        <img src="https://autorepo.streamcompanies.com/wp-content/uploads/2023/06/placeholder.jpg" alt="Your alt text here" class="">
-    </figure>
-    <div class="autorepo_content-box">
-        <h2>{{HEADING_1}}</h2>
-        <div class="autorepo_content">{{BODY_1}}</div>
-    </div>
-</section>
