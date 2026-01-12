@@ -1,8 +1,0 @@
-
-<section class="autorepo_outros-row" data-theme-background-color="white" data-theme-font-color="black" data-has-map="no">
-		<div class="autorepo_content-box">
-			        <h2>{{HEADING_1}}</h2>	
-			<hr>
-			<div class="autorepo_content">{{BODY_1}}</div
-		</div>	
-	</section>
