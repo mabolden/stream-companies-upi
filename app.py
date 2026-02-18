@@ -43,6 +43,42 @@ def get_outro_filename(prev_template, use_map=False):
     return MAP_OUTRO if use_map else STANDARD_OUTRO
 
 
+# ---------- Button Logic ----------
+def replace_button_blocks(html):
+    pattern = r'((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})'
+
+    def repl(match):
+        block = match.group(1)
+
+        links = re.findall(
+            r'<a\s+href="([^"]+)">(.*?)</a>',
+            block,
+            re.IGNORECASE | re.DOTALL
+        )
+
+        if len(links) == 2:
+            template_name = "top buttons.txt"
+        elif len(links) == 3:
+            template_name = "button row.txt"
+        else:
+            return block
+
+        path = resource_path(os.path.join("templates", template_name))
+        if not os.path.exists(path):
+            return block
+
+        with open(path, "r", encoding="utf-8") as f:
+            template = f.read()
+
+        for i, (url, text) in enumerate(links, start=1):
+            template = template.replace(f"BUTTON_{i}_URL", url.strip())
+            template = template.replace(f"BUTTON {i} TEXT", text.strip())
+
+        return "\n" + template + "\n"
+
+    return re.sub(pattern, repl, html, flags=re.IGNORECASE | re.DOTALL)
+
+
 # ---------- Section Parsing ----------
 def extract_sections(html_content):
     sections = []
@@ -222,40 +258,8 @@ def build_single_image_banner_template(sections, use_map_outro=False, global_h1_
     )
 
 
-def build_mslp_template(sections, use_map_outro=False, global_h1_plain=None):
-    if len(sections) < 4:
-        return None, "Not enough sections for MSLP template."
-
-    intro, outro = sections[0], sections[-1]
-    potential_faq = sections[-2]
-    content_sections = sections[1:-2]
-    faq_section = potential_faq if is_faq_heading(potential_faq["heading"]) else None
-    if not faq_section:
-        content_sections.append(potential_faq)
-
-    blocks = [("MSLP Intro.txt", [intro])]
-
-    if len(content_sections) == 6:
-        blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[:3]))
-        blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[3:]))
-    else:
-        i = 0
-        while i + 3 <= len(content_sections):
-            blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[i:i+3]))
-            i += 3
-        if i < len(content_sections):
-            blocks.append(("Penultimate.txt", content_sections[i:]))
-
-    if faq_section:
-        faq_html, err = render_faq_block(faq_section)
-        if err:
-            return None, err
-        blocks.append(("__faq_custom_block__", [faq_html]))
-
-    outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
-    blocks.append((outro_file, [outro]))
-
-    return render_blocks(blocks, global_h1_plain=global_h1_plain)
+def build_dealer_near_template(sections, use_map_outro=False, global_h1_plain=None):
+    return build_single_image_template(sections, use_map_outro, global_h1_plain)
 
 
 def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None):
@@ -306,28 +310,29 @@ def index():
         html = request.form.get("html_content", "").strip()
 
         geo = request.form.get("geo_toggle") == "on"
-        mslp = request.form.get("mslp_toggle") == "on"
         single = request.form.get("single_image_toggle") == "on"
         banner = request.form.get("single_image_banner_toggle") == "on"
         hubpage = request.form.get("hubpage_toggle") == "on"
+        dealer = request.form.get("dealer_near_toggle") == "on"
         map_toggle = request.form.get("map_outro_toggle") == "on"
 
         if not html:
             return redirect(url_for("error_game"))
 
+        html = replace_button_blocks(html)
+
         sections = extract_sections(html)
         if not sections:
             return redirect(url_for("error_game"))
 
-        # Plain-text H1 derived from first section heading
         global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
 
-        if hubpage:
+        if dealer:
+            output, error = build_dealer_near_template(sections, map_toggle, global_h1_plain)
+        elif hubpage:
             output, error = build_hubpage_template(sections, map_toggle, global_h1_plain)
         elif geo:
             output, error = build_geo_template(sections, map_toggle, global_h1_plain)
-        elif mslp:
-            output, error = build_mslp_template(sections, map_toggle, global_h1_plain)
         elif single:
             output, error = build_single_image_template(sections, map_toggle, global_h1_plain)
         elif banner:
