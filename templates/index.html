@@ -7,12 +7,24 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<!-- Prism Syntax Highlight -->
+<!-- Monaco Editor CDN -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/loader.js"></script>
+
+<!-- Prism for schema output -->
 <link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-json.min.js"></script>
 
-<script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
+<style>
+#editor{
+height:260px;
+width:600px;
+margin:auto;
+border-radius:10px;
+overflow:hidden;
+border:1px solid #0d5c85;
+}
+</style>
 </head>
 
 <body>
@@ -32,11 +44,13 @@
 
 <h2>Hi! I'm your personal UPI</h2>
 
-<form method="POST">
+<form method="POST" id="mainForm">
 
-<div class="editor-container">
-<textarea id="html_content" name="html_content">Start typing your HTML here...</textarea>
-</div>
+<!-- Monaco editor container -->
+<div id="editor"></div>
+
+<!-- hidden textarea for Flask POST -->
+<textarea name="html_content" id="hiddenHtml" style="display:none;"></textarea>
 
 <div style="text-align:center;">
 <button class="button" type="submit"><strong>↑</strong></button>
@@ -92,11 +106,13 @@
 
 </form>
 
+
 {% if download_url %}
 <div class="download-container">
 <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
 </div>
 
+<!-- Schema Generator -->
 <div class="code-box" style="margin:40px auto;max-width:800px;text-align:center;">
 <h3>FAQ Schema Generator</h3>
 
@@ -108,6 +124,8 @@
 </div>
 {% endif %}
 
+
+<!-- Snippets -->
 <div class="code-snippet-container">
 
 <div class="code-box">
@@ -124,6 +142,7 @@
 </code></pre>
 <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
 </div>
+
 
 <div class="code-box">
 <h3>DealerInspire map/contact form</h3>
@@ -143,17 +162,66 @@
 </div>
 </div>
 
+
 <script>
+
+/* ---------- Monaco Editor Init ---------- */
+
+require.config({ paths:{ vs:"https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs" }});
+
+require(["vs/editor/editor.main"], function(){
+
+window.editor = monaco.editor.create(document.getElementById("editor"),{
+value:"Start typing your HTML here...",
+language:"html",
+theme:"vs-dark",
+automaticLayout:true,
+fontSize:14,
+wordWrap:"on",
+minimap:{enabled:false}
+});
+
+});
+
+
+/* ---------- Copy ---------- */
+
 function copyCode(id){
-navigator.clipboard.writeText(document.getElementById(id).innerText);
+const text=document.getElementById(id).innerText;
+navigator.clipboard.writeText(text);
 }
 
 function copySchema(){
-navigator.clipboard.writeText(document.querySelector("#schemaOutput code").innerText);
+const text=document.querySelector("#schemaOutput code").innerText;
+navigator.clipboard.writeText(text);
 }
 
+
+/* ---------- Submit Sync ---------- */
+
+document.getElementById("mainForm").addEventListener("submit",function(){
+document.getElementById("hiddenHtml").value=editor.getValue();
+});
+
+
+/* ---------- Toggle Logic ---------- */
+
+document.querySelectorAll('.switch-label input').forEach(t=>{
+t.addEventListener('change',()=>{
+if(t.checked){
+document.querySelectorAll('.switch-label input').forEach(o=>{
+if(o!==t)o.checked=false;
+});
+}
+});
+});
+
+
+/* ---------- Schema ---------- */
+
 async function generateSchema(){
-const html=CKEDITOR.instances.html_content.getData().trim();
+
+const html=editor.getValue().trim();
 if(!html){alert("No HTML detected");return;}
 
 const res=await fetch("/generate-schema",{
@@ -180,39 +248,6 @@ box.textContent=JSON.stringify(data,null,2);
 Prism.highlightElement(box);
 }
 
-document.addEventListener('DOMContentLoaded',function(){
-
-CKEDITOR.replace('html_content',{
-height:200,
-width:600,
-autoParagraph:false,
-fillEmptyBlocks:false,
-enterMode:CKEDITOR.ENTER_P,
-shiftEnterMode:CKEDITOR.ENTER_BR,
-removePlugins:'elementspath,resize,font,justify,colorbutton,stylescombo,showblocks',
-allowedContent:'h1 h2 h3 h4 h5 h6 p br ul ol li hr; strong b em i u sup; a[!href,target,rel];',
-disallowedContent:'*[style]; *[class]; span; font;',
-toolbar:[
-{ name:'clipboard', items:['Cut','Copy','Paste','Undo','Redo']},
-{ name:'basicstyles', items:['Bold','Italic','Underline','RemoveFormat']},
-{ name:'paragraph', items:['NumberedList','BulletedList','Outdent','Indent']},
-{ name:'links', items:['Link','Unlink']},
-{ name:'styles', items:['Format']},
-{ name:'tools', items:['Source','Maximize']}
-]
-});
-
-document.querySelectorAll('.switch-label input').forEach(t=>{
-t.addEventListener('change',()=>{
-if(t.checked){
-document.querySelectorAll('.switch-label input').forEach(o=>{
-if(o!==t)o.checked=false;
-});
-}
-});
-});
-
-});
 </script>
 
 </body>
