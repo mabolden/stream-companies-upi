@@ -52,7 +52,7 @@ def replace_button_blocks(html):
 
     def build_button_html(links):
         if len(links) == 2:
-            template_name = "Top buttons.txt"
+            template_name = "Top Buttons.txt"
         elif len(links) == 3:
             template_name = "Button Row.txt"
         else:
