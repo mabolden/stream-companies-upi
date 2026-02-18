@@ -23,11 +23,6 @@ flex-wrap:wrap;
 width:48%;
 box-sizing:border-box;
 }
-.code-box textarea{
-width:100%;
-height:400px;
-box-sizing:border-box;
-}
 @media(max-width:900px){
 .code-box{width:100%;}
 }
@@ -180,13 +175,32 @@ margin-top:15px;
 
 <div class="code-box">
 <h3>DealerOn map/contact form</h3>
-<textarea id="codeBoxLeft" readonly>...</textarea>
+<pre><code class="language-html" id="codeBoxLeft">
+&lt;div class="row"&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0;margin:0;padding:0;width:100%;height:650px;"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
 <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
 </div>
 
+
 <div class="code-box">
 <h3>DealerInspire map/contact form</h3>
-<textarea id="codeBoxRight" readonly>...</textarea>
+<pre><code class="language-html" id="codeBoxRight">
+&lt;div class="row"&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0;margin:0;padding:0;width:100%;height:650px;"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="col-md-12 col-md-6"&gt;
+        [gravityform id="3" title="true" description="true"]
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
 <button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
 </div>
 
@@ -195,9 +209,8 @@ margin-top:15px;
 
 <script>
 function copyCode(id){
-const el=document.getElementById(id);
-el.select();
-document.execCommand('copy');
+const text=document.getElementById(id).innerText;
+navigator.clipboard.writeText(text);
 }
 
 function copySchema(){
