@@ -40,7 +40,7 @@ body {
     top: 0;
     left: 0;
     height: 60px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 6px rgba(0,0,0,.2);
     z-index: 1000;
 }
 
@@ -70,12 +70,12 @@ body {
 }
 
 /* =========================
-   CKEditor Base Styling
+   CKEditor Source Mode
    ========================= */
 
 .cke_source {
-    background-color: #ffffff !important;
-    color: #000000 !important;
+    background-color: #012b44 !important;
+    color: #cfe9ff !important;
     font-family: monospace !important;
 }
 
@@ -83,9 +83,7 @@ body {
    CKEditor Fullscreen Fix
    ========================= */
 
-body.cke_maximized {
-    overflow: hidden;
-}
+body.cke_maximized { overflow:hidden; }
 
 body.cke_maximized .cke {
     position: fixed !important;
@@ -103,7 +101,7 @@ body.cke_maximized .cke_contents {
 }
 
 body.cke_maximized textarea.cke_source {
-    height: 100% !important;
+    height:100%!important;
 }
 
 /* =========================
@@ -111,170 +109,198 @@ body.cke_maximized textarea.cke_source {
    ========================= */
 
 .toggle-row {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 30px auto 15px;
-    flex-wrap: wrap;
-    width: 100%;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin:30px auto 15px;
+    flex-wrap:wrap;
+    width:100%;
 }
 
 .switch-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    user-select: none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    user-select:none;
 }
 
 .switch-label input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+    opacity:0;
+    width:0;
+    height:0;
 }
 
 .slider {
-    position: relative;
-    width: 60px;
-    height: 34px;
-    background-color: #97adb9;
-    border-radius: 34px;
-    transition: background-color 0.3s;
+    position:relative;
+    width:60px;
+    height:34px;
+    background:#97adb9;
+    border-radius:34px;
+    transition:.3s;
 }
 
-.slider::before {
-    content: "";
-    position: absolute;
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    transition: transform 0.3s;
+.slider::before{
+    content:"";
+    position:absolute;
+    height:26px;
+    width:26px;
+    left:4px;
+    bottom:4px;
+    background:#fff;
+    border-radius:50%;
+    transition:.3s;
 }
 
-.switch-label input:checked + .slider {
-    background-color: #ca7149;
+.switch-label input:checked + .slider{
+    background:#ca7149;
 }
 
-.switch-label input:checked + .slider::before {
-    transform: translateX(26px);
+.switch-label input:checked + .slider::before{
+    transform:translateX(26px);
 }
 
-.switch-text {
-    font-size: 14px;
-    text-align: center;
+.switch-text{
+    font-size:14px;
+    text-align:center;
 }
 
 /* =========================
    Map Checkbox
    ========================= */
 
-.map-check-row {
-    display: flex;
-    justify-content: center;
-    margin: 15px auto 35px;
-    width: 100%;
+.map-check-row{
+    display:flex;
+    justify-content:center;
+    margin:15px auto 35px;
+    width:100%;
 }
 
-.map-check {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
+.map-check{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
 }
 
-.map-check input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+.map-check input{
+    position:absolute;
+    opacity:0;
 }
 
-.map-check__dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid rgba(255, 255, 255, 0.85);
-    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+.map-check__dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid rgba(255,255,255,.85);
 }
 
-.map-check input:checked + .map-check__dot {
-    background: #ca7149;
-    border-color: #ca7149;
-    box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
+.map-check input:checked+.map-check__dot{
+    background:#ca7149;
+    border-color:#ca7149;
+    box-shadow:0 0 0 3px rgba(202,113,73,.35);
 }
 
 /* =========================
    Code Snippets
    ========================= */
 
-.code-snippet-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-    margin: 40px auto;
-    width: 100%;
+.code-snippet-container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    margin:40px auto;
+    width:100%;
 }
 
-.code-box {
-    flex: 1 1 600px;
-    max-width: 700px;
+.code-box{
+    flex:1 1 600px;
+    max-width:700px;
 }
 
-.code-box h3 {
-    color: #f3793e;
-    margin-bottom: 8px;
+.code-box h3{
+    color:#f3793e;
+    margin-bottom:8px;
 }
 
-.code-box textarea {
-    width: 100%;
-    height: 400px;
-    padding: 12px;
-    font-family: monospace;
-    font-size: 14px;
-    background-color: #f9f9f9;
-    color: #000000;
-    border-radius: 8px;
-    border: 1px solid #cccccc;
-    resize: none;
+.code-box textarea{
+    width:100%;
+    height:400px;
+    padding:12px;
+    font-family:monospace;
+    font-size:14px;
+    background:#012b44;
+    color:#d6f0ff;
+    border-radius:8px;
+    border:1px solid #0d5c85;
+    resize:none;
+}
+
+/* =========================
+   Schema Output Code Block
+   ========================= */
+
+#schemaOutput{
+    background:#011e30;
+    border:1px solid #0d5c85;
+    border-radius:10px;
+    padding:16px;
+    margin-top:20px;
+    text-align:left;
+    overflow:auto;
+}
+
+#schemaOutput code{
+    font-family:Consolas, monospace;
+    font-size:14px;
 }
 
 /* =========================
    Buttons
    ========================= */
 
-.button {
-    background-color: #ca7149;
-    color: #ffffff;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 50px;
-    font-size: 24px;
-    cursor: pointer;
+.button{
+    background:#ca7149;
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    border-radius:50px;
+    font-size:24px;
+    cursor:pointer;
 }
 
-.button:hover {
-    background-color: #a35d3a;
+.button:hover{
+    background:#a35d3a;
 }
 
-/* CRITICAL FIX IS HERE */
-.download-button {
-    position: static;
-    display: inline-block;
-    background-color: #2ec2d5;
-    color: #ffffff;
-    padding: 12px 20px;
-    border-radius: 50px;
-    font-size: 16px;
-    text-decoration: none;
-    margin: 10px 0 30px;
+.download-button{
+    display:inline-block;
+    background:#2ec2d5;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:50px;
+    font-size:16px;
+    text-decoration:none;
+    margin:10px 0 30px;
 }
 
-.download-button:hover {
-    background-color: #22a9bb;
+.download-button:hover{
+    background:#22a9bb;
+}
+
+.copy-button{
+    margin-top:10px;
+    padding:8px 16px;
+    background:#f3793e;
+    border:none;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.copy-button:hover{
+    background:#d45f28;
 }
