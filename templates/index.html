@@ -1,313 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Stream Companies Content Generator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stream Companies Content Generator</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <style>
-        .code-snippet-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .code-box {
-            width: 48%;
-            box-sizing: border-box;
-        }
-        .code-box textarea {
-            width: 100%;
-            height: 400px;
-            box-sizing: border-box;
-        }
-        @media (max-width: 900px) {
-            .code-box { width: 100%; }
-        }
+<style>
+.code-snippet-container{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.code-box{
+    width:48%;
+    box-sizing:border-box;
+}
+.code-box textarea{
+    width:100%;
+    height:400px;
+    box-sizing:border-box;
+}
+@media(max-width:900px){
+    .code-box{width:100%;}
+}
+.editor-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:30px auto;
+    width:100%;
+}
+.cke_editor_html_content{margin:0 auto;}
 
-        .editor-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 30px auto;
-            width: 100%;
-        }
+.map-check-row{
+    display:flex;
+    justify-content:center;
+    margin-top:18px;
+}
+.map-check{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+}
+.map-check input{
+    position:absolute;
+    opacity:0;
+}
+.map-check__dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid rgba(255,255,255,.85);
+}
+.map-check input:checked+.map-check__dot{
+    background:#ca7149;
+    border-color:#ca7149;
+}
 
-        .cke_editor_html_content { margin: 0 auto; }
+#schemaOutput{
+    width:100%;
+    font-family:monospace;
+    background:#111;
+    color:#0f0;
+    border-radius:6px;
+    padding:12px;
+}
+</style>
 
-        .map-check-row {
-            display: flex;
-            justify-content: center;
-            margin-top: 18px;
-        }
-
-        .map-check {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .map-check input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .map-check__dot {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.85);
-            box-sizing: border-box;
-            transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-        }
-
-        .map-check input[type="checkbox"]:checked + .map-check__dot {
-            background: #ca7149;
-            border-color: #ca7149;
-            box-shadow: 0 0 0 3px rgba(202, 113, 73, 0.35);
-        }
-
-        .map-check input[type="checkbox"]:focus-visible + .map-check__dot {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
-        }
-
-        body.cke_maximized {
-            padding-top: 0 !important;
-            height: 100vh !important;
-            overflow: hidden !important;
-        }
-
-        body.cke_maximized .banner { display: none !important; }
-
-        body.cke_maximized .content { margin-top: 0 !important; }
-
-        body.cke_maximized .cke {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 99999 !important;
-        }
-
-        body.cke_maximized .cke_contents { height: calc(100vh - 120px) !important; }
-
-        body.cke_maximized textarea.cke_source {
-            height: 100% !important;
-            min-height: 100% !important;
-            box-sizing: border-box !important;
-        }
-    </style>
-
-    <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
 
 <body>
 
-    <div class="banner">
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='Stream_Logo.png') }}" alt="Stream Companies Logo">
-        </div>
-        <h1>Stream Companies UPI (Content Generator)</h1>
-    </div>
+<div class="banner">
+<div class="logo-container">
+<img src="{{ url_for('static', filename='Stream_Logo.png') }}">
+</div>
+<h1>Stream Companies UPI (Content Generator)</h1>
+</div>
 
-    <div class="content">
+<div class="content">
 
-        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
-            <img src="{{ url_for('static', filename='UPI_Logo.png') }}"
-                 alt="Unpaid Intern Logo"
-                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-        </div>
+<div style="display:flex;justify-content:center;margin-top:10px;">
+<img src="{{ url_for('static', filename='UPI_Logo.png') }}" style="width:100px;height:100px;border-radius:50%;">
+</div>
 
-        <br>
-        <h2>Hi! I'm your personal UPI</h2>
+<h2>Hi! I'm your personal UPI</h2>
 
-        <form method="POST">
+<form method="POST">
 
-            <div class="editor-container">
-                <textarea id="html_content" name="html_content" placeholder="Paste your raw HTML here">Start typing your HTML here...</textarea>
-            </div>
+<div class="editor-container">
+<textarea id="html_content" name="html_content">Start typing your HTML here...</textarea>
+</div>
 
-            <div style="text-align: center;">
-                <button class="button" type="submit"><strong>↑</strong></button>
-            </div>
+<div style="text-align:center;">
+<button class="button" type="submit"><strong>↑</strong></button>
+</div>
 
-            <div class="toggle-row">
+<div class="toggle-row">
 
-                <label class="switch-label">
-                    <input type="checkbox" id="geo_toggle" name="geo_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Geolocation Template</div>
-                </label>
+<label class="switch-label">
+<input type="checkbox" id="geo_toggle" name="geo_toggle">
+<span class="slider"></span>
+<div class="switch-text">Geolocation Template</div>
+</label>
 
-                <label class="switch-label">
-                    <input type="checkbox" id="mslp_toggle" name="mslp_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">SRP/MSLP Template</div>
-                </label>
+<label class="switch-label">
+<input type="checkbox" id="mslp_toggle" name="mslp_toggle">
+<span class="slider"></span>
+<div class="switch-text">SRP/MSLP Template</div>
+</label>
 
-                <label class="switch-label">
-                    <input type="checkbox" id="single_image_toggle" name="single_image_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Single Image Template</div>
-                </label>
+<label class="switch-label">
+<input type="checkbox" id="single_image_toggle" name="single_image_toggle">
+<span class="slider"></span>
+<div class="switch-text">Single Image Template</div>
+</label>
 
-                <label class="switch-label">
-                    <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Single Image Template (Banner)</div>
-                </label>
+<label class="switch-label">
+<input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
+<span class="slider"></span>
+<div class="switch-text">Single Image Template (Banner)</div>
+</label>
 
-                <label class="switch-label">
-                    <input type="checkbox" id="dealer_near_toggle" name="dealer_near_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Dealer Near Template</div>
-                </label>
+<label class="switch-label">
+<input type="checkbox" id="dealer_near_toggle" name="dealer_near_toggle">
+<span class="slider"></span>
+<div class="switch-text">Dealer Near Template</div>
+</label>
 
-                <label class="switch-label">
-                    <input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
-                    <span class="slider"></span>
-                    <div class="switch-text">Hubpage Template</div>
-                </label>
-            </div>
+<label class="switch-label">
+<input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
+<span class="slider"></span>
+<div class="switch-text">Hubpage Template</div>
+</label>
 
-            <div class="map-check-row">
-                <label class="map-check">
-                    <input type="checkbox" id="map_outro_toggle" name="map_outro_toggle">
-                    <span class="map-check__dot"></span>
-                    <div class="switch-text">Outro w/Map</div>
-                </label>
-            </div>
+</div>
 
-        </form>
+<div class="map-check-row">
+<label class="map-check">
+<input type="checkbox" name="map_outro_toggle">
+<span class="map-check__dot"></span>
+<div class="switch-text">Outro w/Map</div>
+</label>
+</div>
 
-        {% if download_url %}
-        <div class="download-container">
-            <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
-        </div>
-        {% endif %}
+</form>
 
-        <div class="code-snippet-container">
+{% if download_url %}
+<div class="download-container">
+<a class="download-button" href="{{ download_url }}" download>Download Output File</a>
+</div>
 
-            <div class="code-box">
-                <h3>DealerOn map/contact form</h3>
-                <textarea id="codeBoxLeft" readonly>&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
-    &lt;/div&gt;
+<!-- FAQ SCHEMA GENERATOR -->
+<div class="code-box" style="margin:40px auto;max-width:800px;text-align:center;">
+<h3>FAQ Schema Generator</h3>
+
+<button class="copy-button" type="button" onclick="generateSchema()">
+Generate Schema
+</button>
+
+<textarea id="schemaOutput" readonly style="margin-top:15px;height:220px;display:none;"></textarea>
+
+<button id="copySchemaBtn" class="copy-button" style="display:none;" onclick="copyCode('schemaOutput')">
+Copy Schema
+</button>
+</div>
+{% endif %}
+
+
+<div class="code-snippet-container">
+
+<div class="code-box">
+<h3>DealerOn map/contact form</h3>
+<textarea id="codeBoxLeft" readonly>&lt;div class="row"&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+&lt;iframe src="https://www.example.com/fillermap" style="width:100%;height:650px;"&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+#LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+&lt;/div&gt;
 &lt;/div&gt;</textarea>
-                <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
-            </div>
+<button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
+</div>
 
-            <div class="code-box">
-                <h3>DealerInspire map/contact form</h3>
-                <textarea id="codeBoxRight" readonly>&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0; margin: 0; padding: 0; width: 100%; height: 650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        [gravityform id="3" title="true" description="true"]
-    &lt;/div&gt;
+<div class="code-box">
+<h3>DealerInspire map/contact form</h3>
+<textarea id="codeBoxRight" readonly>&lt;div class="row"&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+&lt;iframe src="https://www.example.com/fillermap" style="width:100%;height:650px;"&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+[gravityform id="3"]
+&lt;/div&gt;
 &lt;/div&gt;</textarea>
-                <button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
-            </div>
+<button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
+</div>
 
-        </div>
-    </div>
+</div>
+</div>
 
-    <script>
-        function copyCode(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.select();
-            el.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-        }
+<script>
+function copyCode(id){
+const el=document.getElementById(id);
+el.select();
+document.execCommand('copy');
+}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            CKEDITOR.disableAutoInline = true;
+async function generateSchema(){
+const editor=CKEDITOR.instances.html_content;
+const html=editor.getData().trim();
 
-            if (CKEDITOR.instances.html_content) {
-                CKEDITOR.instances.html_content.destroy(true);
-            }
+if(!html){alert("No HTML detected");return;}
 
-            const editor = CKEDITOR.replace('html_content', {
-                height: 200,
-                width: 600,
-                autoParagraph: false,
-                fillEmptyBlocks: false,
-                enterMode: CKEDITOR.ENTER_P,
-                shiftEnterMode: CKEDITOR.ENTER_BR,
-                pasteFromWordRemoveStyles: true,
-                pasteFromWordRemoveFontStyles: true,
-                removePlugins: 'elementspath,resize,font,justify,colorbutton,stylescombo,showblocks',
-                format_tags: 'p;h1;h2;h3;h4;h5;h6;pre',
-                allowedContent: 'h1 h2 h3 h4 h5 h6 p br ul ol li hr; strong b em i u sup; a[!href,target,rel];',
-                disallowedContent: '*[style]; *[class]; span; font;',
-                toolbar: [
-                    { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
-                    { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
-                    { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent' ] },
-                    { name: 'links', items: [ 'Link', 'Unlink' ] },
-                    { name: 'styles', items: [ 'Format' ] },
-                    { name: 'tools', items: [ 'Source', 'Maximize' ] }
-                ]
-            });
+const res=await fetch("/generate-schema",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:"html="+encodeURIComponent(html)
+});
 
-            function resizeMaximized(editorInstance) {
-                if (!document.body.classList.contains('cke_maximized')) return;
-                const container = editorInstance.container && editorInstance.container.$;
-                if (!container) return;
-                const top = container.querySelector('.cke_top')?.offsetHeight || 0;
-                const bottom = container.querySelector('.cke_bottom')?.offsetHeight || 0;
-                const contents = container.querySelector('.cke_contents');
-                if (!contents) return;
-                const h = window.innerHeight - top - bottom;
-                if (h > 0) contents.style.height = h + 'px';
-            }
+const box=document.getElementById("schemaOutput");
+const copyBtn=document.getElementById("copySchemaBtn");
+const data=await res.json();
 
-            editor.on('afterCommandExec', function(e) {
-                if (e.data && e.data.name === 'maximize') {
-                    setTimeout(function() { resizeMaximized(editor); }, 50);
-                }
-            });
+box.style.display="block";
 
-            editor.on('mode', function() {
-                setTimeout(function() { resizeMaximized(editor); }, 50);
-            });
+if(!res.ok){
+copyBtn.style.display="none";
+box.value=data.error;
+return;
+}
 
-            window.addEventListener('resize', function() {
-                resizeMaximized(editor);
-            });
+copyBtn.style.display="inline-block";
+box.value=JSON.stringify(data,null,2);
+}
 
-            const templateToggles = [
-                document.getElementById('geo_toggle'),
-                document.getElementById('mslp_toggle'),
-                document.getElementById('single_image_toggle'),
-                document.getElementById('single_banner_toggle'),
-                document.getElementById('dealer_near_toggle'),
-                document.getElementById('hubpage_toggle')
-            ];
+document.addEventListener('DOMContentLoaded',function(){
 
-            templateToggles.forEach(toggle => {
-                if (!toggle) return;
-                toggle.addEventListener('change', () => {
-                    if (toggle.checked) {
-                        templateToggles.forEach(other => {
-                            if (other && other !== toggle) other.checked = false;
-                        });
-                    }
-                });
-            });
-        });
-    </script>
+CKEDITOR.replace('html_content',{
+height:200,
+width:600,
+autoParagraph:false,
+fillEmptyBlocks:false,
+enterMode:CKEDITOR.ENTER_P,
+shiftEnterMode:CKEDITOR.ENTER_BR,
+removePlugins:'elementspath,resize,font,justify,colorbutton,stylescombo,showblocks',
+allowedContent:'h1 h2 h3 h4 h5 h6 p br ul ol li hr; strong b em i u sup; a[!href,target,rel];',
+disallowedContent:'*[style]; *[class]; span; font;',
+toolbar:[
+{ name:'clipboard', items:['Cut','Copy','Paste','Undo','Redo']},
+{ name:'basicstyles', items:['Bold','Italic','Underline','RemoveFormat']},
+{ name:'paragraph', items:['NumberedList','BulletedList','Outdent','Indent']},
+{ name:'links', items:['Link','Unlink']},
+{ name:'styles', items:['Format']},
+{ name:'tools', items:['Source','Maximize']}
+]
+});
+
+const toggles=document.querySelectorAll('.switch-label input');
+
+toggles.forEach(t=>{
+t.addEventListener('change',()=>{
+if(t.checked){
+toggles.forEach(o=>{if(o!==t)o.checked=false});
+}
+});
+});
+
+});
+</script>
 
 </body>
 </html>
