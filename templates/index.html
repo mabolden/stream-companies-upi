@@ -1,30 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Stream Companies Content Generator</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<!-- Monaco Editor CDN -->
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/loader.js"></script>
-
-<!-- Prism for schema output -->
-<link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-json.min.js"></script>
-
 <style>
-#editor{
-height:260px;
-width:600px;
-margin:auto;
-border-radius:10px;
-overflow:hidden;
-border:1px solid #0d5c85;
+.code-snippet-container{
+display:flex;
+gap:20px;
+justify-content:center;
+flex-wrap:wrap;
+}
+.code-box{
+width:48%;
+box-sizing:border-box;
+}
+.code-box textarea{
+width:100%;
+height:400px;
+box-sizing:border-box;
+}
+@media(max-width:900px){
+.code-box{width:100%;}
+}
+.editor-container{
+display:flex;
+justify-content:center;
+align-items:center;
+margin:30px auto;
+width:100%;
+}
+.cke_editor_html_content{margin:0 auto;}
+
+.map-check-row{
+display:flex;
+justify-content:center;
+margin-top:18px;
+}
+.map-check{
+display:inline-flex;
+align-items:center;
+gap:12px;
+cursor:pointer;
+}
+.map-check input{
+position:absolute;
+opacity:0;
+}
+.map-check__dot{
+width:22px;
+height:22px;
+border-radius:50%;
+background:#fff;
+border:2px solid rgba(255,255,255,.85);
+}
+.map-check input:checked+.map-check__dot{
+background:#ca7149;
+border-color:#ca7149;
+}
+
+#schemaOutput{
+width:100%;
+font-family:monospace;
+background:#111;
+color:#0f0;
+border-radius:6px;
+padding:12px;
 }
 </style>
+
+<script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
 
 <body>
@@ -44,13 +92,11 @@ border:1px solid #0d5c85;
 
 <h2>Hi! I'm your personal UPI</h2>
 
-<form method="POST" id="mainForm">
+<form method="POST">
 
-<!-- Monaco editor container -->
-<div id="editor"></div>
-
-<!-- hidden textarea for Flask POST -->
-<textarea name="html_content" id="hiddenHtml" style="display:none;"></textarea>
+<div class="editor-container">
+<textarea id="html_content" name="html_content">Start typing your HTML here...</textarea>
+</div>
 
 <div style="text-align:center;">
 <button class="button" type="submit"><strong>↑</strong></button>
@@ -59,37 +105,37 @@ border:1px solid #0d5c85;
 <div class="toggle-row">
 
 <label class="switch-label">
-<input type="checkbox" name="geo_toggle">
+<input type="checkbox" id="geo_toggle" name="geo_toggle">
 <span class="slider"></span>
 <div class="switch-text">Geolocation Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" name="mslp_toggle">
+<input type="checkbox" id="mslp_toggle" name="mslp_toggle">
 <span class="slider"></span>
 <div class="switch-text">SRP/MSLP Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" name="single_image_toggle">
+<input type="checkbox" id="single_image_toggle" name="single_image_toggle">
 <span class="slider"></span>
 <div class="switch-text">Single Image Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" name="single_image_banner_toggle">
+<input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
 <span class="slider"></span>
 <div class="switch-text">Single Image Template (Banner)</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" name="dealer_near_toggle">
+<input type="checkbox" id="dealer_near_toggle" name="dealer_near_toggle">
 <span class="slider"></span>
 <div class="switch-text">Dealer Near Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" name="hubpage_toggle">
+<input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
 <span class="slider"></span>
 <div class="switch-text">Hubpage Template</div>
 </label>
@@ -106,105 +152,108 @@ border:1px solid #0d5c85;
 
 </form>
 
-
 {% if download_url %}
 <div class="download-container">
 <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
 </div>
 
-<!-- Schema Generator -->
 <div class="code-box" style="margin:40px auto;max-width:800px;text-align:center;">
 <h3>FAQ Schema Generator</h3>
 
 <button class="copy-button" type="button" onclick="generateSchema()">Generate Schema</button>
 
-<pre id="schemaOutput"><code class="language-json"></code></pre>
+<textarea id="schemaOutput" readonly style="margin-top:15px;height:220px;display:none;"></textarea>
 
-<button id="copySchemaBtn" class="copy-button" style="display:none;" onclick="copySchema()">Copy Schema</button>
+<button id="copySchemaBtn" class="copy-button" style="display:none;" onclick="copyCode('schemaOutput')">Copy Schema</button>
 </div>
 {% endif %}
 
-
-<!-- Snippets -->
 <div class="code-snippet-container">
 
 <div class="code-box">
 <h3>DealerOn map/contact form</h3>
-<pre><code class="language-html" id="codeBoxLeft">
-&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0;margin:0;padding:0;width:100%;height:650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        #LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
-    &lt;/div&gt;
+<textarea id="codeBoxLeft" readonly>&lt;div class="row"&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+&lt;iframe src="https://www.example.com/fillermap" style="width:100%;height:650px;"&gt;&lt;/iframe&gt;
 &lt;/div&gt;
-</code></pre>
+&lt;div class="col-md-12 col-md-6"&gt;
+#LOADCUSTOMFILE|Responsive|Production|Sidebar|Sidebar-Contact#
+&lt;/div&gt;
+&lt;/div&gt;</textarea>
 <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
 </div>
 
-
 <div class="code-box">
 <h3>DealerInspire map/contact form</h3>
-<pre><code class="language-html" id="codeBoxRight">
-&lt;div class="row"&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        &lt;iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.example.com/fillermap" style="border:0;margin:0;padding:0;width:100%;height:650px;"&gt;&lt;/iframe&gt;
-    &lt;/div&gt;
-    &lt;div class="col-md-12 col-md-6"&gt;
-        [gravityform id="3" title="true" description="true"]
-    &lt;/div&gt;
+<textarea id="codeBoxRight" readonly>&lt;div class="row"&gt;
+&lt;div class="col-md-12 col-md-6"&gt;
+&lt;iframe src="https://www.example.com/fillermap" style="width:100%;height:650px;"&gt;&lt;/iframe&gt;
 &lt;/div&gt;
-</code></pre>
+&lt;div class="col-md-12 col-md-6"&gt;
+[gravityform id="3"]
+&lt;/div&gt;
+&lt;/div&gt;</textarea>
 <button class="copy-button" onclick="copyCode('codeBoxRight')">Copy</button>
 </div>
 
 </div>
 </div>
 
-
 <script>
-
-/* ---------- Monaco Editor Init ---------- */
-
-require.config({ paths:{ vs:"https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs" }});
-
-require(["vs/editor/editor.main"], function(){
-
-window.editor = monaco.editor.create(document.getElementById("editor"),{
-value:"Start typing your HTML here...",
-language:"html",
-theme:"vs-dark",
-automaticLayout:true,
-fontSize:14,
-wordWrap:"on",
-minimap:{enabled:false}
-});
-
-});
-
-
-/* ---------- Copy ---------- */
-
 function copyCode(id){
-const text=document.getElementById(id).innerText;
-navigator.clipboard.writeText(text);
+const el=document.getElementById(id);
+el.select();
+document.execCommand('copy');
 }
 
-function copySchema(){
-const text=document.querySelector("#schemaOutput code").innerText;
-navigator.clipboard.writeText(text);
-}
+async function generateSchema(){
+const editor=CKEDITOR.instances.html_content;
+const html=editor.getData().trim();
+if(!html){alert("No HTML detected");return;}
 
-
-/* ---------- Submit Sync ---------- */
-
-document.getElementById("mainForm").addEventListener("submit",function(){
-document.getElementById("hiddenHtml").value=editor.getValue();
+const res=await fetch("/generate-schema",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:"html="+encodeURIComponent(html)
 });
 
+const box=document.getElementById("schemaOutput");
+const copyBtn=document.getElementById("copySchemaBtn");
+const data=await res.json();
 
-/* ---------- Toggle Logic ---------- */
+box.style.display="block";
+
+if(!res.ok){
+copyBtn.style.display="none";
+box.value=data.error;
+return;
+}
+
+copyBtn.style.display="inline-block";
+box.value=JSON.stringify(data,null,2);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+
+CKEDITOR.replace('html_content',{
+height:200,
+width:600,
+autoParagraph:false,
+fillEmptyBlocks:false,
+enterMode:CKEDITOR.ENTER_P,
+shiftEnterMode:CKEDITOR.ENTER_BR,
+removePlugins:'elementspath,resize,font,justify,colorbutton,stylescombo,showblocks',
+allowedContent:'h1 h2 h3 h4 h5 h6 p br ul ol li hr; strong b em i u sup; a[!href,target,rel];',
+disallowedContent:'*[style]; *[class]; span; font;',
+toolbar:[
+{ name:'clipboard', items:['Cut','Copy','Paste','Undo','Redo']},
+{ name:'basicstyles', items:['Bold','Italic','Underline','RemoveFormat']},
+{ name:'paragraph', items:['NumberedList','BulletedList','Outdent','Indent']},
+{ name:'links', items:['Link','Unlink']},
+{ name:'styles', items:['Format']},
+{ name:'tools', items:['Source','Maximize']}
+]
+});
 
 document.querySelectorAll('.switch-label input').forEach(t=>{
 t.addEventListener('change',()=>{
@@ -216,38 +265,7 @@ if(o!==t)o.checked=false;
 });
 });
 
-
-/* ---------- Schema ---------- */
-
-async function generateSchema(){
-
-const html=editor.getValue().trim();
-if(!html){alert("No HTML detected");return;}
-
-const res=await fetch("/generate-schema",{
-method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:"html="+encodeURIComponent(html)
 });
-
-const box=document.querySelector("#schemaOutput code");
-const wrap=document.getElementById("schemaOutput");
-const copyBtn=document.getElementById("copySchemaBtn");
-
-const data=await res.json();
-wrap.style.display="block";
-
-if(!res.ok){
-copyBtn.style.display="none";
-box.textContent=data.error;
-return;
-}
-
-copyBtn.style.display="inline-block";
-box.textContent=JSON.stringify(data,null,2);
-Prism.highlightElement(box);
-}
-
 </script>
 
 </body>
