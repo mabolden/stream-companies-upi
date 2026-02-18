@@ -43,17 +43,11 @@ def get_outro_filename(prev_template, use_map=False):
     return MAP_OUTRO if use_map else STANDARD_OUTRO
 
 
-# ---------- Button Logic (tokenize then inject later) ----------
+# ---------- BUTTON SYSTEM ----------
 def replace_button_blocks(html):
-    """
-    Finds 2-3 adjacent <a href="...">text</a> anchors (inside a <p> or bare),
-    replaces them with a token wrapped in <p>, and returns (html, token_map).
-    """
     token_map = {}
 
-    # <p> that contains ONLY 2 or 3 anchors (plus whitespace)
     p_wrapped_pattern = r'(<p[^>]*>\s*((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})\s*</p>)'
-    # bare 2 or 3 anchors (plus whitespace, including no spaces)
     bare_pattern = r'((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})'
 
     def build_button_html(links):
@@ -77,44 +71,26 @@ def replace_button_blocks(html):
 
         return template
 
+    def make_token(html):
+        token = f"UPI_BTN_{len(token_map)+1}"
+        token_map[token] = html
+        return f'<p data-upi="{token}"></p>'
+
     def repl_p(match):
-        whole_p = match.group(1)
-        anchors_only = match.group(2)
+        anchors = match.group(2)
+        links = re.findall(r'<a\s+href="([^"]+)">(.*?)</a>', anchors, re.I | re.S)
+        btn_html = build_button_html(links)
+        return make_token(btn_html) if btn_html else match.group(1)
 
-        links = re.findall(
-            r'<a\s+href="([^"]+)">(.*?)</a>',
-            anchors_only,
-            re.IGNORECASE | re.DOTALL,
-        )
-
-        button_html = build_button_html(links)
-        if not button_html:
-            return whole_p
-
-        token = f"__UPI_BTN_{len(token_map) + 1}__"
-        token_map[token] = button_html
-        return f"<p>{token}</p>"
-
-    html = re.sub(p_wrapped_pattern, repl_p, html, flags=re.IGNORECASE | re.DOTALL)
+    html = re.sub(p_wrapped_pattern, repl_p, html, flags=re.I | re.S)
 
     def repl_bare(match):
         block = match.group(1)
+        links = re.findall(r'<a\s+href="([^"]+)">(.*?)</a>', block, re.I | re.S)
+        btn_html = build_button_html(links)
+        return make_token(btn_html) if btn_html else block
 
-        links = re.findall(
-            r'<a\s+href="([^"]+)">(.*?)</a>',
-            block,
-            re.IGNORECASE | re.DOTALL,
-        )
-
-        button_html = build_button_html(links)
-        if not button_html:
-            return block
-
-        token = f"__UPI_BTN_{len(token_map) + 1}__"
-        token_map[token] = button_html
-        return f"<p>{token}</p>"
-
-    html = re.sub(bare_pattern, repl_bare, html, flags=re.IGNORECASE | re.DOTALL)
+    html = re.sub(bare_pattern, repl_bare, html, flags=re.I | re.S)
 
     return html, token_map
 
@@ -122,8 +98,14 @@ def replace_button_blocks(html):
 def apply_button_tokens(text, token_map):
     if not token_map:
         return text
+
     for token, html in token_map.items():
-        text = text.replace(token, html)
+        text = re.sub(
+            rf'<p[^>]*data-upi="{token}"[^>]*></p>',
+            html,
+            text,
+            flags=re.I
+        )
     return text
 
 
@@ -198,8 +180,7 @@ def render_faq_block(faq_section):
 
     faq_items = []
     for title, body in panels:
-        faq_items.append(
-            f"""
+        faq_items.append(f"""
 <div class="autorepo_accordion">
   <details>
     <summary>{title}</summary>
@@ -212,8 +193,7 @@ def render_faq_block(faq_section):
     </div>
   </details>
 </div>
-""".strip()
-        )
+""")
 
     return faq_template.replace("{{FAQ_ITEMS}}", "\n".join(faq_items)), None
 
@@ -320,7 +300,6 @@ def build_single_image_banner_template(sections, use_map_outro=False, global_h1_
 
 
 def build_dealer_near_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
-    # Dealer near uses SRP structure
     return build_srp_template(sections, use_map_outro, global_h1_plain, token_map)
 
 
@@ -338,16 +317,13 @@ def build_mslp_template(sections, use_map_outro=False, global_h1_plain=None, tok
 
     blocks = [("MSLP Intro.txt", [intro])]
 
-    if len(content_sections) == 6:
-        blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[:3]))
-        blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[3:]))
-    else:
-        i = 0
-        while i + 3 <= len(content_sections):
-            blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[i:i+3]))
-            i += 3
-        if i < len(content_sections):
-            blocks.append(("Penultimate.txt", content_sections[i:]))
+    i = 0
+    while i + 3 <= len(content_sections):
+        blocks.append(("MSLP 3 Hoverbox Section.txt", content_sections[i:i+3]))
+        i += 3
+
+    if i < len(content_sections):
+        blocks.append(("Penultimate.txt", content_sections[i:]))
 
     if faq_section:
         faq_html, err = render_faq_block(faq_section)
@@ -377,15 +353,15 @@ def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None, 
     blocks = [("Hubpage Intro.txt", [intro])]
 
     i = 0
-    use_side_by_side = True
+    toggle = True
     while i < len(content_sections):
-        if use_side_by_side and i + 1 < len(content_sections):
+        if toggle and i + 1 < len(content_sections):
             blocks.append(("Hubpage Side-By-Side.txt", content_sections[i:i+2]))
             i += 2
         else:
             blocks.append(("No Image Section (Primary).txt", [content_sections[i]]))
             i += 1
-        use_side_by_side = not use_side_by_side
+        toggle = not toggle
 
     if faq_section:
         faq_html, err = render_faq_block(faq_section)
@@ -414,8 +390,6 @@ def index():
         hubpage = request.form.get("hubpage_toggle") == "on"
         dealer = request.form.get("dealer_near_toggle") == "on"
         map_toggle = request.form.get("map_outro_toggle") == "on"
-
-        # Legacy toggle name support (if your UI still posts this)
         single_legacy = request.form.get("single_image_toggle") == "on"
 
         if not html:
@@ -448,13 +422,9 @@ def index():
             app.logger.error(error)
             return redirect(url_for("error_game"))
 
-        filename = (
-            re.sub(r"[^a-zA-Z0-9]+", "_", global_h1_plain).lower()[:50] + ".txt"
-            if global_h1_plain
-            else "output.txt"
-        )
-
+        filename = re.sub(r"[^a-zA-Z0-9]+", "_", global_h1_plain).lower()[:50] + ".txt"
         path = os.path.join(TEMP_OUTPUT_DIR, filename)
+
         with open(path, "w", encoding="utf-8") as f:
             f.write(output)
 
