@@ -4,71 +4,70 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Stream Companies Content Generator</title>
-
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 <style>
 .code-snippet-container{
-display:flex;
-gap:20px;
-justify-content:center;
-flex-wrap:wrap;
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    flex-wrap:wrap;
 }
 .code-box{
-width:48%;
-box-sizing:border-box;
+    width:48%;
+    box-sizing:border-box;
 }
 .code-box textarea{
-width:100%;
-height:400px;
-box-sizing:border-box;
+    width:100%;
+    height:400px;
+    box-sizing:border-box;
 }
 @media(max-width:900px){
-.code-box{width:100%;}
+    .code-box{width:100%;}
 }
 .editor-container{
-display:flex;
-justify-content:center;
-align-items:center;
-margin:30px auto;
-width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:30px auto;
+    width:100%;
 }
 .cke_editor_html_content{margin:0 auto;}
 
 .map-check-row{
-display:flex;
-justify-content:center;
-margin-top:18px;
+    display:flex;
+    justify-content:center;
+    margin-top:18px;
 }
 .map-check{
-display:inline-flex;
-align-items:center;
-gap:12px;
-cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
 }
 .map-check input{
-position:absolute;
-opacity:0;
+    position:absolute;
+    opacity:0;
 }
 .map-check__dot{
-width:22px;
-height:22px;
-border-radius:50%;
-background:#fff;
-border:2px solid rgba(255,255,255,.85);
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid rgba(255,255,255,.85);
 }
 .map-check input:checked+.map-check__dot{
-background:#ca7149;
-border-color:#ca7149;
+    background:#ca7149;
+    border-color:#ca7149;
 }
 
 #schemaOutput{
-width:100%;
-font-family:monospace;
-background:#111;
-color:#0f0;
-border-radius:6px;
-padding:12px;
+    width:100%;
+    font-family:monospace;
+    background:#111;
+    color:#0f0;
+    border-radius:6px;
+    padding:12px;
 }
 </style>
 
@@ -157,16 +156,22 @@ padding:12px;
 <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
 </div>
 
+<!-- FAQ SCHEMA GENERATOR -->
 <div class="code-box" style="margin:40px auto;max-width:800px;text-align:center;">
 <h3>FAQ Schema Generator</h3>
 
-<button class="copy-button" type="button" onclick="generateSchema()">Generate Schema</button>
+<button class="copy-button" type="button" onclick="generateSchema()">
+Generate Schema
+</button>
 
 <textarea id="schemaOutput" readonly style="margin-top:15px;height:220px;display:none;"></textarea>
 
-<button id="copySchemaBtn" class="copy-button" style="display:none;" onclick="copyCode('schemaOutput')">Copy Schema</button>
+<button id="copySchemaBtn" class="copy-button" style="display:none;" onclick="copyCode('schemaOutput')">
+Copy Schema
+</button>
 </div>
 {% endif %}
+
 
 <div class="code-snippet-container">
 
@@ -209,6 +214,7 @@ document.execCommand('copy');
 async function generateSchema(){
 const editor=CKEDITOR.instances.html_content;
 const html=editor.getData().trim();
+
 if(!html){alert("No HTML detected");return;}
 
 const res=await fetch("/generate-schema",{
@@ -255,12 +261,12 @@ toolbar:[
 ]
 });
 
-document.querySelectorAll('.switch-label input').forEach(t=>{
+const toggles=document.querySelectorAll('.switch-label input');
+
+toggles.forEach(t=>{
 t.addEventListener('change',()=>{
 if(t.checked){
-document.querySelectorAll('.switch-label input').forEach(o=>{
-if(o!==t)o.checked=false;
-});
+toggles.forEach(o=>{if(o!==t)o.checked=false});
 }
 });
 });
