@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Stream Companies Content Generator</title>
 
@@ -11,68 +11,6 @@
 <link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-json.min.js"></script>
-
-<style>
-.code-snippet-container{
-display:flex;
-gap:20px;
-justify-content:center;
-flex-wrap:wrap;
-}
-.code-box{
-width:48%;
-box-sizing:border-box;
-}
-@media(max-width:900px){
-.code-box{width:100%;}
-}
-.editor-container{
-display:flex;
-justify-content:center;
-align-items:center;
-margin:30px auto;
-width:100%;
-}
-.cke_editor_html_content{margin:0 auto;}
-
-.map-check-row{
-display:flex;
-justify-content:center;
-margin-top:18px;
-}
-.map-check{
-display:inline-flex;
-align-items:center;
-gap:12px;
-cursor:pointer;
-}
-.map-check input{
-position:absolute;
-opacity:0;
-}
-.map-check__dot{
-width:22px;
-height:22px;
-border-radius:50%;
-background:#fff;
-border:2px solid rgba(255,255,255,.85);
-}
-.map-check input:checked+.map-check__dot{
-background:#ca7149;
-border-color:#ca7149;
-}
-
-#schemaOutput{
-display:none;
-background:#013A5C;
-border-radius:8px;
-padding:15px;
-overflow:auto;
-text-align:left;
-font-size:14px;
-margin-top:15px;
-}
-</style>
 
 <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
@@ -107,37 +45,37 @@ margin-top:15px;
 <div class="toggle-row">
 
 <label class="switch-label">
-<input type="checkbox" id="geo_toggle" name="geo_toggle">
+<input type="checkbox" name="geo_toggle">
 <span class="slider"></span>
 <div class="switch-text">Geolocation Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" id="mslp_toggle" name="mslp_toggle">
+<input type="checkbox" name="mslp_toggle">
 <span class="slider"></span>
 <div class="switch-text">SRP/MSLP Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" id="single_image_toggle" name="single_image_toggle">
+<input type="checkbox" name="single_image_toggle">
 <span class="slider"></span>
 <div class="switch-text">Single Image Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
+<input type="checkbox" name="single_image_banner_toggle">
 <span class="slider"></span>
 <div class="switch-text">Single Image Template (Banner)</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" id="dealer_near_toggle" name="dealer_near_toggle">
+<input type="checkbox" name="dealer_near_toggle">
 <span class="slider"></span>
 <div class="switch-text">Dealer Near Template</div>
 </label>
 
 <label class="switch-label">
-<input type="checkbox" id="hubpage_toggle" name="hubpage_toggle">
+<input type="checkbox" name="hubpage_toggle">
 <span class="slider"></span>
 <div class="switch-text">Hubpage Template</div>
 </label>
@@ -170,7 +108,6 @@ margin-top:15px;
 </div>
 {% endif %}
 
-
 <div class="code-snippet-container">
 
 <div class="code-box">
@@ -187,7 +124,6 @@ margin-top:15px;
 </code></pre>
 <button class="copy-button" onclick="copyCode('codeBoxLeft')">Copy</button>
 </div>
-
 
 <div class="code-box">
 <h3>DealerInspire map/contact form</h3>
@@ -209,18 +145,15 @@ margin-top:15px;
 
 <script>
 function copyCode(id){
-const text=document.getElementById(id).innerText;
-navigator.clipboard.writeText(text);
+navigator.clipboard.writeText(document.getElementById(id).innerText);
 }
 
 function copySchema(){
-const text=document.querySelector("#schemaOutput code").innerText;
-navigator.clipboard.writeText(text);
+navigator.clipboard.writeText(document.querySelector("#schemaOutput code").innerText);
 }
 
 async function generateSchema(){
-const editor=CKEDITOR.instances.html_content;
-const html=editor.getData().trim();
+const html=CKEDITOR.instances.html_content.getData().trim();
 if(!html){alert("No HTML detected");return;}
 
 const res=await fetch("/generate-schema",{
