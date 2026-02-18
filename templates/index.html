@@ -76,7 +76,6 @@
             box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
         }
 
-        /* CKEditor maximize fix */
         body.cke_maximized {
             padding-top: 0 !important;
             height: 100vh !important;
@@ -104,7 +103,6 @@
         }
     </style>
 
-    <!-- CKEditor -->
     <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
 </head>
 
@@ -139,6 +137,7 @@
             </div>
 
             <div class="toggle-row">
+
                 <label class="switch-label">
                     <input type="checkbox" id="geo_toggle" name="geo_toggle">
                     <span class="slider"></span>
@@ -161,6 +160,12 @@
                     <input type="checkbox" id="single_banner_toggle" name="single_image_banner_toggle">
                     <span class="slider"></span>
                     <div class="switch-text">Single Image Template (Banner)</div>
+                </label>
+
+                <label class="switch-label">
+                    <input type="checkbox" id="dealer_near_toggle" name="dealer_near_toggle">
+                    <span class="slider"></span>
+                    <div class="switch-text">Dealer Near Template</div>
                 </label>
 
                 <label class="switch-label">
@@ -218,7 +223,6 @@
     </div>
 
     <script>
-        // Clipboard helper
         function copyCode(id) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -228,7 +232,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // CKEditor initialization with clean HTML output (keeps semantic tags, strips Word junk)
             CKEDITOR.disableAutoInline = true;
 
             if (CKEDITOR.instances.html_content) {
@@ -238,26 +241,16 @@
             const editor = CKEDITOR.replace('html_content', {
                 height: 200,
                 width: 600,
-
-                // Output behavior
                 autoParagraph: false,
                 fillEmptyBlocks: false,
                 enterMode: CKEDITOR.ENTER_P,
                 shiftEnterMode: CKEDITOR.ENTER_BR,
-
-                // Pasting cleanup (removes inline Word styling, keeps structure like headings and lists)
                 pasteFromWordRemoveStyles: true,
                 pasteFromWordRemoveFontStyles: true,
-
-                // Keep headings clean (no inline font controls that generate spans/styles)
                 removePlugins: 'elementspath,resize,font,justify,colorbutton,stylescombo,showblocks',
                 format_tags: 'p;h1;h2;h3;h4;h5;h6;pre',
-
-                // Allow only the HTML you actually want
                 allowedContent: 'h1 h2 h3 h4 h5 h6 p br ul ol li hr; strong b em i u; a[!href,target,rel];',
                 disallowedContent: '*[style]; *[class]; span; font;',
-
-                // Toolbar focused on structure, not inline styling
                 toolbar: [
                     { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
                     { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ] },
@@ -270,15 +263,12 @@
 
             function resizeMaximized(editorInstance) {
                 if (!document.body.classList.contains('cke_maximized')) return;
-
                 const container = editorInstance.container && editorInstance.container.$;
                 if (!container) return;
-
                 const top = container.querySelector('.cke_top')?.offsetHeight || 0;
                 const bottom = container.querySelector('.cke_bottom')?.offsetHeight || 0;
                 const contents = container.querySelector('.cke_contents');
                 if (!contents) return;
-
                 const h = window.innerHeight - top - bottom;
                 if (h > 0) contents.style.height = h + 'px';
             }
@@ -297,12 +287,12 @@
                 resizeMaximized(editor);
             });
 
-            // Template toggle exclusivity
             const templateToggles = [
                 document.getElementById('geo_toggle'),
                 document.getElementById('mslp_toggle'),
                 document.getElementById('single_image_toggle'),
                 document.getElementById('single_banner_toggle'),
+                document.getElementById('dealer_near_toggle'),
                 document.getElementById('hubpage_toggle')
             ];
 
