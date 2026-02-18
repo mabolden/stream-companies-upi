@@ -1,0 +1,6 @@
+<section class="autorepo_button-cta-row" data-theme-background-color="light-gray">
+	<div class="autorepo_btns-container" data-btn-count="two" data-btn-min="2" data-btn-max="2" data-btn-background-color="primary" data-btn-type="filled" data-btn-shape="square" data-btn-width="inline-group" data-btn-font-color="white" data-container-padding="yes">
+<a href="BUTTON_1_URL">BUTTON 1 TEXT</a>
+<a href="BUTTON_2_URL">BUTTON 2 TEXT</a>
+	</div>
+</section>
