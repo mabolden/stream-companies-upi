@@ -146,64 +146,14 @@ def strip_all_html(text):
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-def is_faq_heading(heading):
-    return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading, re.I | re.S))
-
-
-# ---------- FAQ Rendering ----------
-def render_faq_block(faq_section):
-    path = resource_path(os.path.join("templates", "FAQ section.txt"))
-    if not os.path.exists(path):
-        return None, "Missing FAQ section template"
-
-    with open(path, "r", encoding="utf-8") as f:
-        faq_template = f.read()
-
-    panels = []
-    current_title = None
-    current_body = []
-
-    for tag in faq_section["paragraphs"]:
-        question_match = re.match(r"<p><strong>(.*?)</strong></p>", tag)
-        if question_match:
-            if current_title:
-                panels.append((current_title, current_body))
-            current_title = question_match.group(1)
-            current_body = []
-        else:
-            current_body.append(tag)
-
-    if current_title:
-        panels.append((current_title, current_body))
-
-    faq_items = []
-    for title, body in panels:
-        faq_items.append(f"""
-<div class="autorepo_accordion">
-  <details>
-    <summary>{title}</summary>
-    <div class="autorepo_content-card" data-include-img="no">
-      <div class="autorepo_content-box">
-        <div class="autorepo_content-text">
-          {''.join(body)}
-        </div>
-      </div>
-    </div>
-  </details>
-</div>
-""")
-
-    return faq_template.replace("{{FAQ_ITEMS}}", "\n".join(faq_items)), None
-
-
 # ---------- Block Rendering ----------
 def render_blocks(blocks, global_h1_plain=None, token_map=None):
     output = ""
 
     for filename, chunk in blocks:
 
-        if filename == "__faq_custom_block__":
-            output += chunk[0] + "\n\n"
+        if filename == "__button_block__":
+            output += token_map.get(chunk[0]["button_block"], "") + "\n\n"
             continue
 
         path = resource_path(os.path.join("templates", filename))
@@ -217,10 +167,6 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
             template = template.replace("Your alt text here", global_h1_plain)
 
         for i, section in enumerate(chunk, start=1):
-
-            if "button_block" in section:
-                output += token_map.get(section["button_block"], "") + "\n\n"
-                continue
 
             heading = clean_heading(section["heading"])
             body = "\n".join(section["paragraphs"])
@@ -236,7 +182,7 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
     return output, None
 
 
-# ---------- Dynamic Builder ----------
+# ---------- Template Builder ----------
 def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro=False, global_h1_plain=None, token_map=None):
 
     intro = sections[0]
@@ -283,35 +229,26 @@ def index():
         global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
 
         if geo:
-    output, error = build_dynamic_template(
-        sections,
-        "Intro.txt",
-        ["Content w Image right.txt", "Standout Content.txt"],
-        map_toggle,
-        global_h1_plain,
-        token_map,
-    )
+            output, error = build_dynamic_template(
+                sections,
+                "Intro.txt",
+                ["Content w Image right.txt", "Standout Content.txt"],
+                map_toggle,
+                global_h1_plain,
+                token_map,
+            )
 
-elif srp:
-    output, error = build_dynamic_template(
-        sections,
-        "Intro.txt",
-        ["No Image Section (White).txt", "No Image Section (Primary).txt"],
-        map_toggle,
-        global_h1_plain,
-        token_map,
-    )
-
-else:
-    return redirect(url_for("error_game"))
-
-            sections,
-            "Intro.txt",
-            ["No Image Section (White).txt", "No Image Section (Primary).txt"],
-            map_toggle,
-            global_h1_plain,
-            token_map,
-        )
+        elif srp:
+            output, error = build_dynamic_template(
+                sections,
+                "Intro.txt",
+                ["No Image Section (White).txt", "No Image Section (Primary).txt"],
+                map_toggle,
+                global_h1_plain,
+                token_map,
+            )
+        else:
+            return redirect(url_for("error_game"))
 
         if output is None:
             return redirect(url_for("error_game"))
