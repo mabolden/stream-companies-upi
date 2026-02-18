@@ -43,29 +43,35 @@ def get_outro_filename(prev_template, use_map=False):
     return MAP_OUTRO if use_map else STANDARD_OUTRO
 
 
-# ---------- Button Logic ----------
+# ---------- Button Logic (Safe injection that survives parsing) ----------
 def replace_button_blocks(html):
-    pattern = r'((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})'
+    """
+    Replaces:
+      - <p> [2 or 3 anchors] </p>
+      - or a bare block of 2 or 3 anchors
+    with a unique token that WILL be captured by extract_sections(),
+    then later swapped back to the full button template HTML.
 
-    def repl(match):
-        block = match.group(1)
+    Returns: (new_html, token_to_html_map)
+    """
+    token_map = {}
 
-        links = re.findall(
-            r'<a\s+href="([^"]+)">(.*?)</a>',
-            block,
-            re.IGNORECASE | re.DOTALL
-        )
+    # Match <p> that contains ONLY 2 or 3 anchors (plus whitespace)
+    p_wrapped_pattern = r'(<p[^>]*>\s*((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})\s*</p>)'
+    # Match bare 2 or 3 anchors (plus whitespace)
+    bare_pattern = r'((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})'
 
+    def build_button_html(links):
         if len(links) == 2:
             template_name = "top buttons.txt"
         elif len(links) == 3:
             template_name = "button row.txt"
         else:
-            return block
+            return None
 
         path = resource_path(os.path.join("templates", template_name))
         if not os.path.exists(path):
-            return block
+            return None
 
         with open(path, "r", encoding="utf-8") as f:
             template = f.read()
@@ -74,9 +80,61 @@ def replace_button_blocks(html):
             template = template.replace(f"BUTTON_{i}_URL", url.strip())
             template = template.replace(f"BUTTON {i} TEXT", text.strip())
 
-        return "\n" + template + "\n"
+        return template
 
-    return re.sub(pattern, repl, html, flags=re.IGNORECASE | re.DOTALL)
+    # 1) Replace <p>wrapped blocks first (prevents injecting divs inside a <p>)
+    def repl_p(match):
+        whole_p = match.group(1)
+        anchors_only = match.group(2)
+
+        links = re.findall(
+            r'<a\s+href="([^"]+)">(.*?)</a>',
+            anchors_only,
+            re.IGNORECASE | re.DOTALL
+        )
+        button_html = build_button_html(links)
+        if not button_html:
+            return whole_p
+
+        token = f"__UPI_BUTTON_BLOCK_{len(token_map) + 1}__"
+        token_map[token] = button_html
+
+        # Put token as its own paragraph so extract_sections captures it cleanly
+        return f"<p>{token}</p>"
+
+    html = re.sub(p_wrapped_pattern, repl_p, html, flags=re.IGNORECASE | re.DOTALL)
+
+    # 2) Replace bare blocks next
+    def repl_bare(match):
+        block = match.group(1)
+
+        links = re.findall(
+            r'<a\s+href="([^"]+)">(.*?)</a>',
+            block,
+            re.IGNORECASE | re.DOTALL
+        )
+        button_html = build_button_html(links)
+        if not button_html:
+            return block
+
+        token = f"__UPI_BUTTON_BLOCK_{len(token_map) + 1}__"
+        token_map[token] = button_html
+
+        # Token alone is fine here, it will be captured as a "paragraph" only if it's inside
+        # a <p> or other captured tag. To guarantee capture, wrap it in <p>.
+        return f"<p>{token}</p>"
+
+    html = re.sub(bare_pattern, repl_bare, html, flags=re.IGNORECASE | re.DOTALL)
+
+    return html, token_map
+
+
+def apply_button_tokens(text, token_map):
+    if not token_map:
+        return text
+    for token, html in token_map.items():
+        text = text.replace(token, html)
+    return text
 
 
 # ---------- Section Parsing ----------
@@ -169,12 +227,14 @@ def render_faq_block(faq_section):
 
 
 # ---------- Block Rendering ----------
-def render_blocks(blocks, global_h1_plain=None):
+def render_blocks(blocks, global_h1_plain=None, token_map=None):
     output = ""
 
     for filename, chunk in blocks:
         if filename == "__faq_custom_block__":
-            output += chunk[0] + "\n\n"
+            faq_html = chunk[0]
+            faq_html = apply_button_tokens(faq_html, token_map)
+            output += faq_html + "\n\n"
             continue
 
         path = resource_path(os.path.join("templates", filename))
@@ -188,18 +248,26 @@ def render_blocks(blocks, global_h1_plain=None):
             template = template.replace("Your alt text here", global_h1_plain)
 
         for i, section in enumerate(chunk, start=1):
-            template = template.replace(f"{{{{HEADING_{i}}}}}", clean_heading(section["heading"]))
-            template = template.replace(f"{{{{BODY_{i}}}}}", "\n".join(section["paragraphs"]))
+            heading = clean_heading(section["heading"])
+            body = "\n".join(section["paragraphs"])
+
+            body = apply_button_tokens(body, token_map)
+
+            template = template.replace(f"{{{{HEADING_{i}}}}}", heading)
+            template = template.replace(f"{{{{BODY_{i}}}}}", body)
+
             h6_joined = "\n".join(section.get("h6_list") or [])
+            h6_joined = apply_button_tokens(h6_joined, token_map)
             template = template.replace("{{BOTTOM_H6}}", h6_joined)
 
+        template = apply_button_tokens(template, token_map)
         output += template + "\n\n"
 
     return output, None
 
 
 # ---------- Dynamic Template Builders ----------
-def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro=False, global_h1_plain=None):
+def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro=False, global_h1_plain=None, token_map=None):
     if len(sections) < 3:
         return None, "Not enough sections"
 
@@ -225,44 +293,48 @@ def build_dynamic_template(sections, intro_template, middle_templates, use_map_o
     outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
     blocks.append((outro_file, [outro]))
 
-    return render_blocks(blocks, global_h1_plain=global_h1_plain)
+    return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
 
 
-def build_geo_template(sections, use_map_outro=False, global_h1_plain=None):
+def build_geo_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
     return build_dynamic_template(
         sections,
         "Intro.txt",
         ["Content w Image right.txt", "Standout Content.txt"],
         use_map_outro,
         global_h1_plain,
+        token_map,
     )
 
 
-def build_single_image_template(sections, use_map_outro=False, global_h1_plain=None):
+def build_single_image_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
     return build_dynamic_template(
         sections,
         "Intro.txt",
         ["No Image Section (White).txt", "No Image Section (Primary).txt"],
         use_map_outro,
         global_h1_plain,
+        token_map,
     )
 
 
-def build_single_image_banner_template(sections, use_map_outro=False, global_h1_plain=None):
+def build_single_image_banner_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
     return build_dynamic_template(
         sections,
         "Banner Image Intro.txt",
         ["No Image Section (White).txt", "No Image Section (Primary).txt"],
         use_map_outro,
         global_h1_plain,
+        token_map,
     )
 
 
-def build_dealer_near_template(sections, use_map_outro=False, global_h1_plain=None):
-    return build_single_image_template(sections, use_map_outro, global_h1_plain)
+def build_dealer_near_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    # Dealer near uses the same structure as SRP in your current setup
+    return build_single_image_template(sections, use_map_outro, global_h1_plain, token_map)
 
 
-def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None):
+def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
     if len(sections) < 3:
         return None, "Not enough sections"
 
@@ -298,7 +370,7 @@ def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None):
     outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
     blocks.append((outro_file, [outro]))
 
-    return render_blocks(blocks, global_h1_plain=global_h1_plain)
+    return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
 
 
 # ---------- Routes ----------
@@ -310,7 +382,8 @@ def index():
         html = request.form.get("html_content", "").strip()
 
         geo = request.form.get("geo_toggle") == "on"
-        single = request.form.get("single_image_toggle") == "on"
+        srp = request.form.get("srp_toggle") == "on"  # SRP toggle support
+        single = request.form.get("single_image_toggle") == "on"  # keep legacy support
         banner = request.form.get("single_image_banner_toggle") == "on"
         hubpage = request.form.get("hubpage_toggle") == "on"
         dealer = request.form.get("dealer_near_toggle") == "on"
@@ -319,7 +392,7 @@ def index():
         if not html:
             return redirect(url_for("error_game"))
 
-        html = replace_button_blocks(html)
+        html, token_map = replace_button_blocks(html)
 
         sections = extract_sections(html)
         if not sections:
@@ -328,15 +401,16 @@ def index():
         global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
 
         if dealer:
-            output, error = build_dealer_near_template(sections, map_toggle, global_h1_plain)
+            output, error = build_dealer_near_template(sections, map_toggle, global_h1_plain, token_map)
         elif hubpage:
-            output, error = build_hubpage_template(sections, map_toggle, global_h1_plain)
+            output, error = build_hubpage_template(sections, map_toggle, global_h1_plain, token_map)
         elif geo:
-            output, error = build_geo_template(sections, map_toggle, global_h1_plain)
-        elif single:
-            output, error = build_single_image_template(sections, map_toggle, global_h1_plain)
+            output, error = build_geo_template(sections, map_toggle, global_h1_plain, token_map)
+        elif srp or single:
+            # SRP uses the single image builder in your workflow
+            output, error = build_single_image_template(sections, map_toggle, global_h1_plain, token_map)
         elif banner:
-            output, error = build_single_image_banner_template(sections, map_toggle, global_h1_plain)
+            output, error = build_single_image_banner_template(sections, map_toggle, global_h1_plain, token_map)
         else:
             return redirect(url_for("error_game"))
 
