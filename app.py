@@ -478,10 +478,16 @@ def index():
             return redirect(url_for("error_game"))
 
         # Keep your rule: first section must be a real heading section
-        if "heading" not in sections[0]:
-            return redirect(url_for("error_game"))
+        if dealer:
+            if not any("heading" in s for s in sections):
+                return redirect(url_for("error_game"))
+        else:
+            if "heading" not in sections[0]:
+                return redirect(url_for("error_game"))
 
-        global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
+        first_real = next(s for s in sections if "heading" in s)
+        global_h1_plain = strip_all_html(clean_heading(first_real["heading"]))
+
 
         if dealer:
             output, error = build_dealer_near_template(sections, map_toggle, global_h1_plain, token_map)
