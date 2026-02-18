@@ -450,6 +450,65 @@ def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None, 
 
     return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
 
+# ---------- FAQ SCHEMA GENERATOR ----------
+def extract_faq_schema_pairs(html):
+
+    questions = re.findall(r"<summary>(.*?)</summary>", html, re.S | re.I)
+    answers = re.findall(r"<p>(.*?)</p>", html, re.S | re.I)
+
+    def clean(text):
+        text = re.sub("<.*?>", "", text or "")
+        text = (
+            text.replace("&rsquo;", "’")
+                .replace("&ldquo;", "“")
+                .replace("&rdquo;", "”")
+                .replace("&mdash;", "—")
+                .replace("&reg;", "®")
+                .replace("&trade;", "™")
+                .replace("&nbsp;", " ")
+        )
+        return text.strip()
+
+    pairs = []
+    for q, a in zip(questions, answers):
+        q = clean(q)
+        a = clean(a)
+        if q and a:
+            pairs.append((q, a))
+
+    return pairs
+
+
+@app.route("/generate-schema", methods=["POST"])
+def generate_schema():
+
+    html = request.form.get("html", "").strip()
+
+    if not html:
+        return {"error": "No input provided."}, 400
+
+    pairs = extract_faq_schema_pairs(html)
+
+    if not pairs:
+        return {"error": "No FAQ entries detected."}, 400
+
+    schema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": []
+    }
+
+    for q, a in pairs:
+        schema["mainEntity"].append({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": a
+            }
+        })
+
+    return schema
 
 # ---------- Routes ----------
 @app.route("/", methods=["GET", "POST"])
