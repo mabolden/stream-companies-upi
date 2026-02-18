@@ -52,7 +52,7 @@ def replace_button_blocks(html):
     token_map = {}
 
     p_wrapped_pattern = r'(<p[^>]*>\s*((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})\s*</p>)'
-    bare_pattern = r'((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})'
+    bare_pattern = r'((?:<a\s+href="([^"]+)">.*?</a>\s*){2,3})'
 
     def build_button_html(links):
         if len(links) == 2:
@@ -161,6 +161,52 @@ def is_faq_heading(heading):
     return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading, re.I | re.S))
 
 
+# ---------- FAQ Rendering ----------
+def render_faq_block(faq_section):
+    path = resource_path(os.path.join("templates", "FAQ section.txt"))
+    if not os.path.exists(path):
+        return None, "Missing FAQ section template"
+
+    with open(path, "r", encoding="utf-8") as f:
+        faq_template = f.read()
+
+    panels = []
+    current_title = None
+    current_body = []
+
+    for tag in faq_section["paragraphs"]:
+        question_match = re.match(r"<p><strong>(.*?)</strong></p>", tag)
+        if question_match:
+            if current_title:
+                panels.append((current_title, current_body))
+            current_title = question_match.group(1)
+            current_body = []
+        else:
+            current_body.append(tag)
+
+    if current_title:
+        panels.append((current_title, current_body))
+
+    faq_items = []
+    for title, body in panels:
+        faq_items.append(f"""
+<div class="autorepo_accordion">
+  <details>
+    <summary>{title}</summary>
+    <div class="autorepo_content-card" data-include-img="no">
+      <div class="autorepo_content-box">
+        <div class="autorepo_content-text">
+          {''.join(body)}
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+""")
+
+    return faq_template.replace("{{FAQ_ITEMS}}", "\n".join(faq_items)), None
+
+
 # ---------- Block Rendering ----------
 def render_blocks(blocks, global_h1_plain=None, token_map=None):
     output = ""
@@ -169,6 +215,10 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
 
         if filename == "__button_block__":
             output += token_map.get(chunk[0]["button_block"], "") + "\n\n"
+            continue
+
+        if filename == "__faq_custom_block__":
+            output += chunk[0] + "\n\n"
             continue
 
         path = resource_path(os.path.join("templates", filename))
@@ -181,7 +231,7 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
         if global_h1_plain:
             template = template.replace("Your alt text here", global_h1_plain)
 
-        for i, section in enumerate(chunk, start=1):
+        for i,section in enumerate(chunk, start=1):
             heading = clean_heading(section["heading"])
             body = apply_button_tokens("\n".join(section["paragraphs"]), token_map)
 
@@ -196,7 +246,7 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
     return output, None
 
 
-# ---------- Template Builder ----------
+# ---------- Dynamic Builder ----------
 def add_dynamic_blocks(blocks, stream, templates):
     i = 0
     for item in stream:
@@ -209,12 +259,26 @@ def add_dynamic_blocks(blocks, stream, templates):
 
 def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro, global_h1_plain, token_map):
 
+    if len(sections) < 3:
+        return None, "Not enough sections"
+
     intro = sections[0]
     outro = sections[-1]
-    content = sections[1:-1]
+    potential_faq = sections[-2]
+    content = sections[1:-2]
+
+    faq_section = potential_faq if is_faq_heading(potential_faq["heading"]) else None
+    if not faq_section:
+        content.append(potential_faq)
 
     blocks = [(intro_template, [intro])]
     add_dynamic_blocks(blocks, content, middle_templates)
+
+    if faq_section:
+        faq_html, err = render_faq_block(faq_section)
+        if err:
+            return None, err
+        blocks.append(("__faq_custom_block__", [faq_html]))
 
     outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
     blocks.append((outro_file, [outro]))
