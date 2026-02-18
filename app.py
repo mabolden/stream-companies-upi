@@ -7,9 +7,9 @@ import tempfile
 
 
 # ---------- App Setup ----------
-def resource_path(relative_path: str) -> str:
+def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # type: ignore[attr-defined]
+        base_path = sys._MEIPASS
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
@@ -37,7 +37,7 @@ MAP_OUTRO = "Outro w map.txt"
 LIGHT_GRAY_MAP_OUTRO = "Light-gray outro w map.txt"
 
 
-def get_outro_filename(prev_template: str, use_map: bool = False) -> str:
+def get_outro_filename(prev_template, use_map=False):
     if prev_template in ("Standout Content.txt", "No Image Section (Primary).txt"):
         return LIGHT_GRAY_MAP_OUTRO if use_map else LIGHT_GRAY_OUTRO
     return MAP_OUTRO if use_map else STANDARD_OUTRO
@@ -48,7 +48,7 @@ BTN_TOKEN_FMT = "__UPI_BUTTON_BLOCK_{token}__"
 BTN_TOKEN_PATTERN = r"__UPI_BUTTON_BLOCK_(UPI_BTN_\d+)__"
 
 
-def replace_button_blocks(html: str):
+def replace_button_blocks(html):
     token_map = {}
 
     p_wrapped_pattern = r'(<p[^>]*>\s*((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})\s*</p>)'
@@ -75,7 +75,7 @@ def replace_button_blocks(html: str):
 
         return template
 
-    def make_token(html_snippet: str) -> str:
+    def make_token(html_snippet):
         token = f"UPI_BTN_{len(token_map) + 1}"
         token_map[token] = html_snippet
         return "\n" + BTN_TOKEN_FMT.format(token=token) + "\n"
@@ -99,7 +99,7 @@ def replace_button_blocks(html: str):
     return html, token_map
 
 
-def apply_button_tokens(text: str, token_map: dict) -> str:
+def apply_button_tokens(text, token_map):
     if not token_map or not text:
         return text
 
@@ -110,7 +110,7 @@ def apply_button_tokens(text: str, token_map: dict) -> str:
 
 
 # ---------- Section Parsing ----------
-def extract_sections(html_content: str):
+def extract_sections(html_content):
     sections = []
 
     matches = re.finditer(
@@ -149,15 +149,15 @@ def extract_sections(html_content: str):
     return sections
 
 
-def clean_heading(heading: str) -> str:
+def clean_heading(heading):
     return re.sub(r"</?h[1-6][^>]*>", "", heading)
 
 
-def strip_all_html(text: str) -> str:
+def strip_all_html(text):
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-def is_faq_heading(heading: str) -> bool:
+def is_faq_heading(heading):
     return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading, re.I | re.S))
 
 
@@ -166,6 +166,7 @@ def render_blocks(blocks, global_h1_plain=None, token_map=None):
     output = ""
 
     for filename, chunk in blocks:
+
         if filename == "__button_block__":
             output += token_map.get(chunk[0]["button_block"], "") + "\n\n"
             continue
@@ -207,6 +208,7 @@ def add_dynamic_blocks(blocks, stream, templates):
 
 
 def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro, global_h1_plain, token_map):
+
     intro = sections[0]
     outro = sections[-1]
     content = sections[1:-1]
@@ -222,16 +224,16 @@ def build_dynamic_template(sections, intro_template, middle_templates, use_map_o
 
 # ---------- Dealer Template ----------
 def build_dealer_near_template(sections, use_map_outro, global_h1_plain, token_map):
+
     blocks = []
 
-    if sections and "button_block" in sections[0]:
+    if "button_block" in sections[0]:
         blocks.append(("__button_block__", [sections[0]]))
         sections = sections[1:]
 
-    # CHANGE: Use Single Image Intro, not Banner Image Intro
     output, err = build_dynamic_template(
         sections,
-        "Single Image Intro.txt",
+        "Intro.txt",
         ["No Image Section (White).txt", "No Image Section (Primary).txt"],
         use_map_outro,
         global_h1_plain,
