@@ -58,7 +58,7 @@ def replace_button_blocks(html):
         else:
             return None
 
-        path = resource_path(os.path.join("templates", template_name))
+        path = os.path.join(app.template_folder, template_name)
         if not os.path.exists(path):
             return None
 
