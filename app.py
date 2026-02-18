@@ -282,7 +282,29 @@ def index():
 
         global_h1_plain = strip_all_html(clean_heading(sections[0]["heading"]))
 
-        output, error = build_dynamic_template(
+        if geo:
+    output, error = build_dynamic_template(
+        sections,
+        "Intro.txt",
+        ["Content w Image right.txt", "Standout Content.txt"],
+        map_toggle,
+        global_h1_plain,
+        token_map,
+    )
+
+elif srp:
+    output, error = build_dynamic_template(
+        sections,
+        "Intro.txt",
+        ["No Image Section (White).txt", "No Image Section (Primary).txt"],
+        map_toggle,
+        global_h1_plain,
+        token_map,
+    )
+
+else:
+    return redirect(url_for("error_game"))
+
             sections,
             "Intro.txt",
             ["No Image Section (White).txt", "No Image Section (Primary).txt"],
