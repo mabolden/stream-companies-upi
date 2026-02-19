@@ -30,19 +30,6 @@ logging.basicConfig(
 TEMP_OUTPUT_DIR = tempfile.mkdtemp(prefix="upi_output_")
 
 
-# ---------- Outro Configuration ----------
-STANDARD_OUTRO = "Outro.txt"
-LIGHT_GRAY_OUTRO = "Light-gray outro.txt"
-MAP_OUTRO = "Outro w map.txt"
-LIGHT_GRAY_MAP_OUTRO = "Light-gray outro w map.txt"
-
-
-def get_outro_filename(prev_template, use_map=False):
-    if prev_template in ("Standout Content.txt", "No Image Section (Primary).txt"):
-        return LIGHT_GRAY_MAP_OUTRO if use_map else LIGHT_GRAY_OUTRO
-    return MAP_OUTRO if use_map else STANDARD_OUTRO
-
-
 # ---------- BUTTON SYSTEM ----------
 BTN_TOKEN_FMT = "__UPI_BUTTON_BLOCK_{token}__"
 BTN_TOKEN_PATTERN = r"__UPI_BUTTON_BLOCK_(UPI_BTN_\d+)__"
@@ -76,7 +63,7 @@ def replace_button_blocks(html):
         return template
 
     def make_token(html_snippet):
-        token = f"UPI_BTN_{len(token_map) + 1}"
+        token = f"UPI_BTN_{len(token_map)+1}"
         token_map[token] = html_snippet
         return "\n" + BTN_TOKEN_FMT.format(token=token) + "\n"
 
@@ -107,20 +94,10 @@ def apply_button_tokens(text, token_map):
         token = m.group(1)
         return token_map.get(token, "")
 
-    text = re.sub(BTN_TOKEN_PATTERN, repl, text, flags=re.I | re.S)
-
-    for token, html in token_map.items():
-        text = re.sub(
-            rf'<p[^>]*data-upi="{re.escape(token)}"[^>]*>\s*</p>',
-            html,
-            text,
-            flags=re.I | re.S
-        )
-
-    return text
+    return re.sub(BTN_TOKEN_PATTERN, repl, text, flags=re.I | re.S)
 
 
-# ---------- Section Parsing ----------
+# ---------- SECTION PARSER ----------
 def extract_sections(html_content):
     sections = []
 
@@ -130,52 +107,31 @@ def extract_sections(html_content):
         re.IGNORECASE | re.DOTALL,
     )
 
-    current_section = {"heading": None, "paragraphs": [], "h6_list": []}
+    current = {"heading": None, "content": []}
 
     for match in matches:
         tag = match.group(0)
 
-        token_match = re.match(BTN_TOKEN_PATTERN, tag, flags=re.I | re.S)
+        token_match = re.match(BTN_TOKEN_PATTERN, tag)
         if token_match:
-            if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
-                sections.append(current_section)
-            current_section = {"heading": None, "paragraphs": [], "h6_list": []}
             sections.append({"button_block": token_match.group(1)})
             continue
 
-        if re.match(r"<h[1-2][^>]*>", tag, flags=re.I | re.S):
-            if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
-                sections.append(current_section)
-            current_section = {"heading": tag, "paragraphs": [], "h6_list": []}
-
-        elif re.match(r"<h6[^>]*>", tag, flags=re.I | re.S):
-            current_section["h6_list"].append(tag)
-
+        if re.match(r"<h[1-2]", tag, re.I):
+            if current["heading"]:
+                sections.append(current)
+            current = {"heading": tag, "content": []}
         else:
-            current_section["paragraphs"].append(tag)
+            current["content"].append(tag)
 
-    if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
-        sections.append(current_section)
+    if current["heading"]:
+        sections.append(current)
 
     return sections
 
 
-def clean_heading(heading):
-    return re.sub(r"</?h[1-6][^>]*>", "", heading)
-
-
-def strip_all_html(text):
-    return re.sub(r"<[^>]+>", "", text or "").strip()
-
-
-def is_faq_heading(heading):
-    return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading, re.IGNORECASE | re.DOTALL))
-
-
-# ---------- UPDATED FAQ SCHEMA PARSER ----------
+# ---------- FAQ SCHEMA ----------
 def extract_faq_schema_pairs(html):
-
-    pairs = []
 
     matches = re.findall(
         r"<p>\s*<strong>(.*?)</strong>\s*</p>\s*<p>(.*?)</p>",
@@ -186,17 +142,10 @@ def extract_faq_schema_pairs(html):
     def clean(text):
         return re.sub("<.*?>", "", text or "").strip()
 
-    for q, a in matches:
-        q = clean(q)
-        a = clean(a)
-        if q and a:
-            pairs.append((q, a))
-
-    return pairs
+    return [(clean(q), clean(a)) for q, a in matches if clean(q) and clean(a)]
 
 
 def build_schema(html):
-
     pairs = extract_faq_schema_pairs(html)
 
     if not pairs:
@@ -219,6 +168,7 @@ def build_schema(html):
     }
 
 
+# ---------- API ROUTE ----------
 @app.route("/generate-schema", methods=["POST"])
 def generate_schema():
     html = (request.form.get("html_content") or request.form.get("html") or "").strip()
@@ -246,17 +196,28 @@ def index():
         if not html:
             return redirect(url_for("error_game"))
 
+        # build schema automatically
         schema = build_schema(html)
 
+        # process buttons
         html, token_map = replace_button_blocks(html)
-        sections = extract_sections(html)
 
+        # replace tokens with real HTML
+        html = apply_button_tokens(html, token_map)
+
+        # extract sections (validation only)
+        sections = extract_sections(html)
         if not sections:
             return redirect(url_for("error_game"))
 
-        first_real = next(s for s in sections if "heading" in s)
-        global_h1_plain = strip_all_html(clean_heading(first_real["heading"]))
+        # safe heading detection
+        first_real = next((s for s in sections if "heading" in s), None)
+        if not first_real:
+            return redirect(url_for("error_game"))
 
+        global_h1_plain = re.sub("<.*?>", "", first_real["heading"])
+
+        # final output
         output = html
 
         filename = re.sub(r"[^a-zA-Z0-9]+", "_", global_h1_plain).lower()[:50] + ".txt"
@@ -270,6 +231,7 @@ def index():
     return render_template("index.html", download_url=download_url, schema=schema)
 
 
+# ---------- DOWNLOAD ----------
 @app.route("/download/<filename>")
 def download_file(filename):
     path = os.path.join(TEMP_OUTPUT_DIR, filename)
@@ -278,10 +240,12 @@ def download_file(filename):
     return send_file(path, as_attachment=True)
 
 
+# ---------- ERROR PAGE ----------
 @app.route("/error-game")
 def error_game():
     return render_template("error_game.html")
 
 
+# ---------- RUN ----------
 if __name__ == "__main__":
     app.run(debug=False)
