@@ -69,17 +69,6 @@ border:2px solid rgba(255,255,255,.85);
 background:#ca7149;
 border-color:#ca7149;
 }
-
-#schemaOutput{
-display:none;
-background:#013A5C;
-border-radius:8px;
-padding:15px;
-overflow:auto;
-text-align:left;
-font-size:14px;
-margin-top:15px;
-}
 </style>
 
 <script src="https://cdn.ckeditor.com/4.21.0/full/ckeditor.js"></script>
@@ -167,19 +156,16 @@ margin-top:15px;
 <a class="download-button" href="{{ download_url }}" download>Download Output File</a>
 </div>
 
+{% if schema %}
 <div class="code-box" style="margin:40px auto;max-width:800px;text-align:center;">
-<h3>FAQ Schema Generator</h3>
+<h3>FAQ Schema</h3>
 
-<button class="copy-button" type="button" onclick="generateSchema()">Generate Schema</button>
+<pre><code class="language-json">{{ schema | tojson(indent=2) }}</code></pre>
 
-<pre id="schemaOutput"><code class="language-json">{% if schema %}{{ schema | tojson(indent=2) }}{% endif %}</code></pre>
-
-<button id="copySchemaBtn" class="copy-button"
-{% if not schema %}style="display:none;"{% endif %}
-onclick="copySchema()">Copy Schema</button>
+<button class="copy-button" onclick="copySchema()">Copy Schema</button>
 </div>
 {% endif %}
-
+{% endif %}
 
 <div class="code-snippet-container">
 
@@ -228,37 +214,8 @@ navigator.clipboard.writeText(text);
 }
 
 function copySchema(){
-const text=document.querySelector("#schemaOutput code").innerText;
+const text=document.querySelector(".language-json").innerText;
 navigator.clipboard.writeText(text);
-}
-
-async function generateSchema(){
-const editor=CKEDITOR.instances.html_content;
-const html=editor.getData().trim();
-if(!html){alert("No HTML detected");return;}
-
-const res=await fetch("/generate-schema",{
-method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:"html="+encodeURIComponent(html)
-});
-
-const box=document.querySelector("#schemaOutput code");
-const wrap=document.getElementById("schemaOutput");
-const copyBtn=document.getElementById("copySchemaBtn");
-
-const data=await res.json();
-wrap.style.display="block";
-
-if(!res.ok){
-copyBtn.style.display="none";
-box.textContent=data.error;
-return;
-}
-
-copyBtn.style.display="inline-block";
-box.textContent=JSON.stringify(data,null,2);
-Prism.highlightElement(box);
 }
 
 document.addEventListener('DOMContentLoaded',function(){
@@ -293,12 +250,7 @@ if(o!==t)o.checked=false;
 });
 });
 
-// auto show schema if backend already generated it
-const existing=document.querySelector("#schemaOutput code").innerText.trim();
-if(existing!==""){
-document.getElementById("schemaOutput").style.display="block";
 Prism.highlightAll();
-}
 
 });
 </script>
