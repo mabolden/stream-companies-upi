@@ -172,18 +172,21 @@ def is_faq_heading(heading):
     return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading, re.IGNORECASE | re.DOTALL))
 
 
-# ---------- FAQ SCHEMA ----------
+# ---------- UPDATED FAQ SCHEMA PARSER ----------
 def extract_faq_schema_pairs(html):
 
-    questions = re.findall(r"<summary>(.*?)</summary>", html, re.S | re.I)
-    answers = re.findall(r"<p>(.*?)</p>", html, re.S | re.I)
+    pairs = []
+
+    matches = re.findall(
+        r"<p>\s*<strong>(.*?)</strong>\s*</p>\s*<p>(.*?)</p>",
+        html,
+        re.S | re.I
+    )
 
     def clean(text):
-        text = re.sub("<.*?>", "", text or "")
-        return text.strip()
+        return re.sub("<.*?>", "", text or "").strip()
 
-    pairs = []
-    for q, a in zip(questions, answers):
+    for q, a in matches:
         q = clean(q)
         a = clean(a)
         if q and a:
@@ -243,10 +246,8 @@ def index():
         if not html:
             return redirect(url_for("error_game"))
 
-        # ---------- AUTO SCHEMA ----------
         schema = build_schema(html)
 
-        # ---------- NORMAL PROCESS ----------
         html, token_map = replace_button_blocks(html)
         sections = extract_sections(html)
 
