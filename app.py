@@ -30,12 +30,29 @@ logging.basicConfig(
 TEMP_OUTPUT_DIR = tempfile.mkdtemp(prefix="upi_output_")
 
 
+# ---------- Outro Configuration ----------
+STANDARD_OUTRO = "Outro.txt"
+LIGHT_GRAY_OUTRO = "Light-gray outro.txt"
+MAP_OUTRO = "Outro w map.txt"
+LIGHT_GRAY_MAP_OUTRO = "Light-gray outro w map.txt"
+
+
+def get_outro_filename(prev_template, use_map=False):
+    if prev_template in ("Standout Content.txt", "No Image Section (Primary).txt"):
+        return LIGHT_GRAY_MAP_OUTRO if use_map else LIGHT_GRAY_OUTRO
+    return MAP_OUTRO if use_map else STANDARD_OUTRO
+
+
 # ---------- BUTTON SYSTEM ----------
 BTN_TOKEN_FMT = "__UPI_BUTTON_BLOCK_{token}__"
 BTN_TOKEN_PATTERN = r"__UPI_BUTTON_BLOCK_(UPI_BTN_\d+)__"
 
 
 def replace_button_blocks(html):
+    """
+    Finds 2 or 3 consecutive anchor tags (optionally wrapped in a <p>) and replaces them
+    with a stable token. Token content is stored in token_map and inserted later.
+    """
     token_map = {}
 
     p_wrapped_pattern = r'(<p[^>]*>\s*((?:<a\s+href="[^"]+">.*?</a>\s*){2,3})\s*</p>)'
@@ -51,6 +68,7 @@ def replace_button_blocks(html):
 
         path = os.path.join(app.template_folder, template_name)
         if not os.path.exists(path):
+            app.logger.warning(f"Missing button template file: {template_name}")
             return None
 
         with open(path, "r", encoding="utf-8") as f:
@@ -63,7 +81,7 @@ def replace_button_blocks(html):
         return template
 
     def make_token(html_snippet):
-        token = f"UPI_BTN_{len(token_map)+1}"
+        token = f"UPI_BTN_{len(token_map) + 1}"
         token_map[token] = html_snippet
         return "\n" + BTN_TOKEN_FMT.format(token=token) + "\n"
 
@@ -94,10 +112,21 @@ def apply_button_tokens(text, token_map):
         token = m.group(1)
         return token_map.get(token, "")
 
-    return re.sub(BTN_TOKEN_PATTERN, repl, text, flags=re.I | re.S)
+    text = re.sub(BTN_TOKEN_PATTERN, repl, text, flags=re.I | re.S)
+
+    # Backward compatibility for older placeholder <p data-upi="TOKEN"></p>
+    for token, html in token_map.items():
+        text = re.sub(
+            rf'<p[^>]*data-upi="{re.escape(token)}"[^>]*>\s*</p>',
+            html,
+            text,
+            flags=re.I | re.S
+        )
+
+    return text
 
 
-# ---------- SECTION PARSER ----------
+# ---------- Section Parsing ----------
 def extract_sections(html_content):
     sections = []
 
@@ -107,47 +136,387 @@ def extract_sections(html_content):
         re.IGNORECASE | re.DOTALL,
     )
 
-    current = {"heading": None, "content": []}
+    current_section = {"heading": None, "paragraphs": [], "h6_list": []}
 
     for match in matches:
         tag = match.group(0)
 
-        token_match = re.match(BTN_TOKEN_PATTERN, tag)
+        token_match = re.match(BTN_TOKEN_PATTERN, tag, flags=re.I | re.S)
         if token_match:
+            if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
+                sections.append(current_section)
+            current_section = {"heading": None, "paragraphs": [], "h6_list": []}
             sections.append({"button_block": token_match.group(1)})
             continue
 
-        if re.match(r"<h[1-2]", tag, re.I):
-            if current["heading"]:
-                sections.append(current)
-            current = {"heading": tag, "content": []}
-        else:
-            current["content"].append(tag)
+        if re.match(r"<h[1-2][^>]*>", tag, flags=re.I | re.S):
+            if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
+                sections.append(current_section)
+            current_section = {"heading": tag, "paragraphs": [], "h6_list": []}
 
-    if current["heading"]:
-        sections.append(current)
+        elif re.match(r"<h6[^>]*>", tag, flags=re.I | re.S):
+            current_section["h6_list"].append(tag)
+
+        else:
+            current_section["paragraphs"].append(tag)
+
+    if current_section["heading"] and (current_section["paragraphs"] or current_section["h6_list"]):
+        sections.append(current_section)
 
     return sections
 
 
-# ---------- FAQ SCHEMA ----------
-def extract_faq_schema_pairs(html):
+def clean_heading(heading):
+    return re.sub(r"</?h[1-6][^>]*>", "", heading or "")
 
-    matches = re.findall(
-        r"<p>\s*<strong>(.*?)</strong>\s*</p>\s*<p>(.*?)</p>",
-        html,
-        re.S | re.I
+
+def strip_all_html(text):
+    return re.sub(r"<[^>]+>", "", text or "").strip()
+
+
+def is_faq_heading(heading):
+    return bool(re.search(r"<h2[^>]*>.*?faq.*?</h2>", heading or "", re.I | re.S))
+
+
+# ---------- FAQ Rendering (Accordion Block) ----------
+def render_faq_block(faq_section):
+    path = resource_path(os.path.join("templates", "FAQ section.txt"))
+    if not os.path.exists(path):
+        return None, "Missing FAQ section template"
+
+    with open(path, "r", encoding="utf-8") as f:
+        faq_template = f.read()
+
+    panels = []
+    current_title = None
+    current_body = []
+
+    for tag in faq_section["paragraphs"]:
+        question_match = re.match(r"<p>\s*<strong>(.*?)</strong>\s*</p>", tag, flags=re.I | re.S)
+        if question_match:
+            if current_title:
+                panels.append((current_title, current_body))
+            current_title = question_match.group(1)
+            current_body = []
+        else:
+            current_body.append(tag)
+
+    if current_title:
+        panels.append((current_title, current_body))
+
+    faq_items = []
+    for title, body in panels:
+        faq_items.append(f"""
+<div class="autorepo_accordion">
+  <details>
+    <summary>{title}</summary>
+    <div class="autorepo_content-card" data-include-img="no">
+      <div class="autorepo_content-box">
+        <div class="autorepo_content-text">
+          {''.join(body)}
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+""")
+
+    return faq_template.replace("{{FAQ_ITEMS}}", "\n".join(faq_items)), None
+
+
+# ---------- Block Rendering ----------
+def render_blocks(blocks, global_h1_plain=None, token_map=None):
+    output = ""
+
+    for filename, chunk in blocks:
+        if filename == "__faq_custom_block__":
+            output += apply_button_tokens(chunk[0], token_map) + "\n\n"
+            continue
+
+        if filename == "__button_block__":
+            token = chunk[0].get("button_block")
+            output += (token_map.get(token, "") if token_map else "") + "\n\n"
+            continue
+
+        path = resource_path(os.path.join("templates", filename))
+        if not os.path.exists(path):
+            return None, f"Missing template: {filename}"
+
+        with open(path, "r", encoding="utf-8") as f:
+            template = f.read()
+
+        if global_h1_plain:
+            template = template.replace("Your alt text here", global_h1_plain)
+
+        for i, section in enumerate(chunk, start=1):
+            heading = clean_heading(section["heading"])
+            body = "\n".join(section["paragraphs"])
+            body = apply_button_tokens(body, token_map)
+
+            template = template.replace(f"{{{{HEADING_{i}}}}}", heading)
+            template = template.replace(f"{{{{BODY_{i}}}}}", body)
+
+            h6_joined = "\n".join(section.get("h6_list") or [])
+            h6_joined = apply_button_tokens(h6_joined, token_map)
+            template = template.replace("{{BOTTOM_H6}}", h6_joined)
+
+        template = apply_button_tokens(template, token_map)
+        output += template + "\n\n"
+
+    return output, None
+
+
+# ---------- Helpers for inserting button blocks without affecting template alternation ----------
+def add_dynamic_blocks_for_sections(blocks, sections_stream, middle_templates):
+    tmpl_i = 0
+    for section in sections_stream:
+        if "button_block" in section:
+            blocks.append(("__button_block__", [section]))
+        else:
+            blocks.append((middle_templates[tmpl_i % len(middle_templates)], [section]))
+            tmpl_i += 1
+    return blocks
+
+
+# ---------- Dynamic Template Builders ----------
+def build_dynamic_template(sections, intro_template, middle_templates, use_map_outro=False, global_h1_plain=None, token_map=None):
+    if len(sections) < 3:
+        return None, "Not enough sections"
+
+    intro, outro = sections[0], sections[-1]
+    potential_faq = sections[-2]
+    content_sections = sections[1:-2]
+
+    faq_section = potential_faq if (("heading" in potential_faq) and is_faq_heading(potential_faq["heading"])) else None
+    if not faq_section:
+        content_sections.append(potential_faq)
+
+    blocks = [(intro_template, [intro])]
+    add_dynamic_blocks_for_sections(blocks, content_sections, middle_templates)
+
+    if faq_section:
+        faq_html, err = render_faq_block(faq_section)
+        if err:
+            return None, err
+        blocks.append(("__faq_custom_block__", [faq_html]))
+
+    outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
+    blocks.append((outro_file, [outro]))
+
+    return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
+
+
+def build_geo_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    return build_dynamic_template(
+        sections,
+        "Intro.txt",
+        ["Content w Image right.txt", "Standout Content.txt"],
+        use_map_outro,
+        global_h1_plain,
+        token_map,
+    )
+
+
+def build_srp_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    return build_dynamic_template(
+        sections,
+        "Intro.txt",
+        ["No Image Section (White).txt", "No Image Section (Primary).txt"],
+        use_map_outro,
+        global_h1_plain,
+        token_map,
+    )
+
+
+def build_single_image_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    return build_srp_template(sections, use_map_outro, global_h1_plain, token_map)
+
+
+def build_single_image_banner_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    return build_dynamic_template(
+        sections,
+        "Banner Image Intro.txt",
+        ["No Image Section (White).txt", "No Image Section (Primary).txt"],
+        use_map_outro,
+        global_h1_plain,
+        token_map,
+    )
+
+
+def build_dealer_near_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    # Dealer Near: allow optional top button block, then treat rest like SRP
+    if sections and "button_block" in sections[0]:
+        top_btn = sections[0]
+        rest = sections[1:]
+        output, err = build_srp_template(rest, use_map_outro, global_h1_plain, token_map)
+        if output is None:
+            return None, err
+        top, _ = render_blocks([("__button_block__", [top_btn])], global_h1_plain=global_h1_plain, token_map=token_map)
+        return (top + output), None
+
+    return build_srp_template(sections, use_map_outro, global_h1_plain, token_map)
+
+
+def build_mslp_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    if len(sections) < 4:
+        return None, "Not enough sections for MSLP template."
+
+    intro, outro = sections[0], sections[-1]
+    potential_faq = sections[-2]
+    content_sections = sections[1:-2]
+
+    faq_section = potential_faq if (("heading" in potential_faq) and is_faq_heading(potential_faq["heading"])) else None
+    if not faq_section:
+        content_sections.append(potential_faq)
+
+    blocks = [("MSLP Intro.txt", [intro])]
+
+    buffer_three = []
+
+    def flush_buffer():
+        nonlocal buffer_three
+        if len(buffer_three) == 3:
+            blocks.append(("MSLP 3 Hoverbox Section.txt", buffer_three))
+        elif len(buffer_three) > 0:
+            blocks.append(("Penultimate.txt", buffer_three))
+        buffer_three = []
+
+    for item in content_sections:
+        if "button_block" in item:
+            flush_buffer()
+            blocks.append(("__button_block__", [item]))
+            continue
+
+        buffer_three.append(item)
+        if len(buffer_three) == 3:
+            flush_buffer()
+
+    flush_buffer()
+
+    if faq_section:
+        faq_html, err = render_faq_block(faq_section)
+        if err:
+            return None, err
+        blocks.append(("__faq_custom_block__", [faq_html]))
+
+    outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
+    blocks.append((outro_file, [outro]))
+
+    return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
+
+
+def build_hubpage_template(sections, use_map_outro=False, global_h1_plain=None, token_map=None):
+    if len(sections) < 3:
+        return None, "Not enough sections"
+
+    intro = sections[0]
+    outro = sections[-1]
+    potential_faq = sections[-2]
+
+    content_sections = sections[1:-2]
+    faq_section = potential_faq if (("heading" in potential_faq) and is_faq_heading(potential_faq["heading"])) else None
+    if not faq_section:
+        content_sections.append(potential_faq)
+
+    blocks = [("Hubpage Intro.txt", [intro])]
+
+    i = 0
+    toggle = True
+    while i < len(content_sections):
+        item = content_sections[i]
+
+        if "button_block" in item:
+            blocks.append(("__button_block__", [item]))
+            i += 1
+            continue
+
+        if toggle:
+            if i + 1 < len(content_sections) and ("button_block" not in content_sections[i + 1]):
+                blocks.append(("Hubpage Side-By-Side.txt", content_sections[i:i + 2]))
+                i += 2
+            else:
+                blocks.append(("No Image Section (Primary).txt", [content_sections[i]]))
+                i += 1
+        else:
+            blocks.append(("No Image Section (Primary).txt", [content_sections[i]]))
+            i += 1
+
+        toggle = not toggle
+
+    if faq_section:
+        faq_html, err = render_faq_block(faq_section)
+        if err:
+            return None, err
+        blocks.append(("__faq_custom_block__", [faq_html]))
+
+    outro_file = get_outro_filename(blocks[-1][0], use_map_outro)
+    blocks.append((outro_file, [outro]))
+
+    return render_blocks(blocks, global_h1_plain=global_h1_plain, token_map=token_map)
+
+
+# ---------- FAQ Schema (from raw editor input) ----------
+def _decode_entities_basic(text):
+    if text is None:
+        return ""
+    return (text
+            .replace("&rsquo;", "’")
+            .replace("&lsquo;", "‘")
+            .replace("&ldquo;", "“")
+            .replace("&rdquo;", "”")
+            .replace("&nbsp;", " ")
+            .replace("&reg;", "®")
+            .replace("&trade;", "™")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            )
+
+
+def extract_faq_schema_pairs(raw_html):
+    """
+    Expected editor FAQ format:
+    <h2>FAQs</h2>
+    <p><strong>Question?</strong></p>
+    <p>Answer.</p>
+    repeated...
+    """
+    if not raw_html:
+        return []
+
+    # Isolate the FAQs section content (from the FAQs h2 to next h1/h2 or end)
+    m = re.search(r'(<h2[^>]*>\s*FAQs?\s*</h2>)(.*)$', raw_html, flags=re.I | re.S)
+    if not m:
+        return []
+
+    after = m.group(2)
+    # stop at next h1/h2 (not including the FAQs heading)
+    stop = re.search(r'<h[1-2][^>]*>.*?</h[1-2]>', after, flags=re.I | re.S)
+    faq_body = after[:stop.start()] if stop else after
+
+    pairs = re.findall(
+        r"<p[^>]*>\s*<strong[^>]*>(.*?)</strong>\s*</p>\s*<p[^>]*>(.*?)</p>",
+        faq_body,
+        flags=re.I | re.S
     )
 
     def clean(text):
-        return re.sub("<.*?>", "", text or "").strip()
+        text = re.sub(r"<[^>]+>", "", text or "")
+        text = _decode_entities_basic(text)
+        return text.strip()
 
-    return [(clean(q), clean(a)) for q, a in matches if clean(q) and clean(a)]
+    out = []
+    for q, a in pairs:
+        q = clean(q)
+        a = clean(a)
+        if q and a:
+            out.append((q, a))
+
+    return out
 
 
-def build_schema(html):
-    pairs = extract_faq_schema_pairs(html)
-
+def build_schema(raw_html):
+    pairs = extract_faq_schema_pairs(raw_html)
     if not pairs:
         return None
 
@@ -168,57 +537,83 @@ def build_schema(html):
     }
 
 
-# ---------- API ROUTE ----------
 @app.route("/generate-schema", methods=["POST"])
 def generate_schema():
-    html = (request.form.get("html_content") or request.form.get("html") or "").strip()
-
-    if not html:
+    raw_html = (request.form.get("html_content") or request.form.get("html") or "").strip()
+    if not raw_html:
         return jsonify({"error": "No input provided"}), 400
 
-    schema = build_schema(html)
-
+    schema = build_schema(raw_html)
     if not schema:
         return jsonify({"error": "No FAQ found"}), 400
 
     return jsonify(schema)
 
 
-# ---------- MAIN ROUTE ----------
+# ---------- Routes ----------
 @app.route("/", methods=["GET", "POST"])
 def index():
     download_url = None
     schema = None
 
     if request.method == "POST":
-        html = request.form.get("html_content", "").strip()
+        raw_html = request.form.get("html_content", "").strip()
 
-        if not html:
+        geo = request.form.get("geo_toggle") == "on"
+        srp = request.form.get("srp_toggle") == "on"
+        mslp = request.form.get("mslp_toggle") == "on"
+        single = request.form.get("single_image_toggle") == "on"
+        banner = request.form.get("single_image_banner_toggle") == "on"
+        hubpage = request.form.get("hubpage_toggle") == "on"
+        dealer = request.form.get("dealer_near_toggle") == "on"
+        map_toggle = request.form.get("map_outro_toggle") == "on"
+
+        if not raw_html:
             return redirect(url_for("error_game"))
 
-        # build schema automatically
-        schema = build_schema(html)
+        # Auto schema from RAW editor input (so it works even before template rendering)
+        schema = build_schema(raw_html)
 
-        # process buttons
-        html, token_map = replace_button_blocks(html)
+        # Button tokenization first
+        tokenized_html, token_map = replace_button_blocks(raw_html)
 
-        # replace tokens with real HTML
-        html = apply_button_tokens(html, token_map)
-
-        # extract sections (validation only)
-        sections = extract_sections(html)
+        # Parse sections from tokenized HTML
+        sections = extract_sections(tokenized_html)
         if not sections:
             return redirect(url_for("error_game"))
 
-        # safe heading detection
-        first_real = next((s for s in sections if "heading" in s), None)
-        if not first_real:
+        # Rule: first section must be a real heading section, except dealer mode allows optional top button block
+        if dealer:
+            if not any("heading" in s for s in sections):
+                return redirect(url_for("error_game"))
+        else:
+            if "heading" not in sections[0]:
+                return redirect(url_for("error_game"))
+
+        first_real = next(s for s in sections if "heading" in s)
+        global_h1_plain = strip_all_html(clean_heading(first_real["heading"]))
+
+        # Build final output using your full template engine
+        if dealer:
+            output, error = build_dealer_near_template(sections, map_toggle, global_h1_plain, token_map)
+        elif hubpage:
+            output, error = build_hubpage_template(sections, map_toggle, global_h1_plain, token_map)
+        elif geo:
+            output, error = build_geo_template(sections, map_toggle, global_h1_plain, token_map)
+        elif mslp:
+            output, error = build_mslp_template(sections, map_toggle, global_h1_plain, token_map)
+        elif srp:
+            output, error = build_srp_template(sections, map_toggle, global_h1_plain, token_map)
+        elif single:
+            output, error = build_single_image_template(sections, map_toggle, global_h1_plain, token_map)
+        elif banner:
+            output, error = build_single_image_banner_template(sections, map_toggle, global_h1_plain, token_map)
+        else:
             return redirect(url_for("error_game"))
 
-        global_h1_plain = re.sub("<.*?>", "", first_real["heading"])
-
-        # final output
-        output = html
+        if output is None or error:
+            app.logger.error(error or "Unknown build error")
+            return redirect(url_for("error_game"))
 
         filename = re.sub(r"[^a-zA-Z0-9]+", "_", global_h1_plain).lower()[:50] + ".txt"
         path = os.path.join(TEMP_OUTPUT_DIR, filename)
@@ -231,7 +626,6 @@ def index():
     return render_template("index.html", download_url=download_url, schema=schema)
 
 
-# ---------- DOWNLOAD ----------
 @app.route("/download/<filename>")
 def download_file(filename):
     path = os.path.join(TEMP_OUTPUT_DIR, filename)
@@ -240,12 +634,10 @@ def download_file(filename):
     return send_file(path, as_attachment=True)
 
 
-# ---------- ERROR PAGE ----------
 @app.route("/error-game")
 def error_game():
     return render_template("error_game.html")
 
 
-# ---------- RUN ----------
 if __name__ == "__main__":
     app.run(debug=False)
